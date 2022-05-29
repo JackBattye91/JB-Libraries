@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace JB.Common {
     public class ErrorCodes {
-        public static int SUCCESS = 0;
+        public const int SUCCESS = 0;
     }
 }
