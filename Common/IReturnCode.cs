@@ -16,7 +16,7 @@ namespace JB.Common {
         public long ErrorCode { get; set; }
         public IList<JB.Common.Error> Errors { get; set; }
 
-        public ReturnCode(long pErrorCode) {
+        public ReturnCode(long pErrorCode = ErrorCodes.SUCCESS) {
             Data = default(T);
             ErrorCode = pErrorCode;
             Errors = new List<JB.Common.Error>();
