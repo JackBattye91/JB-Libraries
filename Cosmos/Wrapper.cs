@@ -35,8 +35,77 @@ namespace JB.NoSqlDatabase {
                 }
                 else {
                     rc.ErrorCode = 1;
-                    rc.Errors.Add(new Error() { ErrorCode = rc.ErrorCode, StackTrace = Environment.StackTrace });
+                    ErrorWorker.AddError(rc, rc.ErrorCode);
                 }
+            }
+
+            return rc;
+        }
+
+        public async Task<JB.Common.IReturnCode<T>> AddItem<T>(string pDatabaseId, string pContainerId, T item) {
+            IReturnCode<T> rc = new ReturnCode<T>(ErrorCodes.SUCCESS);
+            Container? container = null;
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                var getContainerRc = GetContainer(pDatabaseId, pContainerId);
+
+
+                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc?.ErrorCode) {
+                    container = getContainerRc.Data;
+                }
+
+                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                    ErrorWorker.CopyErrorCode(getContainerRc, rc);
+                }
+            }
+
+
+            try {
+                ItemResponse<T> response = 
+            }
+            catch (Exception e) {
+                
+            }
+
+
+            return rc;
+        }
+
+        public async Task<JB.Common.IReturnCode<IList<T>>> GetItems<T>(string pDatabaseId, string pContainerId, string pItemId) where T : class {
+            IReturnCode<IList<T>> rc = new ReturnCode<IList<T>>(JB.Common.ErrorCodes.SUCCESS);
+            Container? container = null;
+            IList<T> itemsList = new List<T>();
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                var getContainerRc = GetContainer(pDatabaseId, pContainerId);
+
+                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
+                    container = getContainerRc.Data;
+                }
+
+                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                    rc.ErrorCode = getContainerRc.ErrorCode;
+                    ErrorWorker.AddError(getContainerRc, getContainerRc.ErrorCode);
+                }
+            }
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                QueryDefinition queryDefinition = new QueryDefinition($"SELECT * FROM c WHERE c.id='{ pItemId }';");
+                using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
+
+                    while(feedIterator?.HasMoreResults == true) {
+                        var resultSet = await feedIterator.ReadNextAsync();
+
+                        foreach(T? f in resultSet) {
+                            itemsList.Add(f);
+                        }
+                    }
+                }
+            }
+
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                rc.Data = itemsList;
             }
 
             return rc;
