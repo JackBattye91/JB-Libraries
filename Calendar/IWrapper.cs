@@ -9,5 +9,6 @@ namespace JB.Calendar {
         public Task<JB.Common.IReturnCode<IList<Interfaces.ICalendarEvent>>> GetEvents();
         public Task<JB.Common.IReturnCode<bool>> AddEvent(Interfaces.ICalendarEvent pEvent, string pCalendarId);
         public Task<JB.Common.IReturnCode<bool>> UpdateEvent(Interfaces.ICalendarEvent pEvent, string pCalendarId);
+        public Task<JB.Common.IReturnCode<bool>> CancelEvent(string pEventId, string pCalendarId);
     }
 }
