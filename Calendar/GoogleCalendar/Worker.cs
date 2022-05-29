@@ -13,33 +13,21 @@ using Google.Apis.Util.Store;
 
 namespace JB.Calendar.GoogleCalendar {
     internal class Worker {
-        public static async  Task<IReturnCode<UserCredential>> GetCredentials(IList<string> pScopes) {
-            IReturnCode<UserCredential> rc = new ReturnCode<UserCredential>();
-            UserCredential? credential = null;
+        internal static Event Convert(Interfaces.ICalendarEvent pEvent) {
+            Event newEvent = new Event() {
+                Start = new EventDateTime() { DateTime = pEvent.Start },
+                End = new EventDateTime() { DateTime = pEvent.Finish }
+            };
 
-            try {
-                ClientSecrets clientSecrets = new ClientSecrets() {
-                    ClientId = "",
-                    ClientSecret = ""
-                };
+            return newEvent;
+        }
+        internal static Interfaces.ICalendarEvent Convert(Event pEvent) {
+            Interfaces.ICalendarEvent newEvent = new Models.CalendarEvent() {
+                Start = pEvent.Start.DateTime,
+                Finish = pEvent.End.DateTime
+            };
 
-                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(clientSecrets, pScopes, "", CancellationToken.None);
-
-
-                var service = new CalendarService(new BaseClientService.Initializer() {
-                    HttpClientInitializer = credential,
-                    ApplicationName = Consts.APPLICATION_NAME
-                });
-
-
-            }
-            catch (Exception e) {
-
-            }
-
-            // https://developers.google.com/calendar/api/quickstart/dotnet?hl=en_GB
-
-            return rc;
+            return newEvent;
         }
     }
 }
