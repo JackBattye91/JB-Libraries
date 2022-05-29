@@ -23,8 +23,9 @@ namespace JB.Common {
         public static void CopyErrorCode<T, U>(IReturnCode<T> pSource, IReturnCode<U> pDestination) {
             pDestination.ErrorCode = pSource.ErrorCode;
 
-            foreach(var srcCodes in pSource.Errors) {
+            foreach (var srcCodes in pSource.Errors) {
                 pDestination.Errors.Add(srcCodes);
+            }
         }
     }
 }
