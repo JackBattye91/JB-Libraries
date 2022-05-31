@@ -16,5 +16,6 @@ namespace JB.NoSqlDatabase {
         public Task<JB.Common.IReturnCode<IList<T>>> GetItems<T>(string pDatabaseId, string pContainerId);
         public Task<JB.Common.IReturnCode<T>> AddItem<T>(string pDatabaseId, string pContainerId, T pItem);
         public Task<JB.Common.IReturnCode<T>> UpdateItem<T>(string pDatabaseId, string pContainerId, T pItem, string pItemId);
+        public Task<JB.Common.IReturnCode<T>> DeleteItem<T>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKey);     
     }
 }

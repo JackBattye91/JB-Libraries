@@ -108,5 +108,18 @@ namespace NoSqlDatabase.Tests {
             // Assert
             Assert.That(itemTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
         }
+
+        [Test]
+        public void DeleteItem() {
+            // Arrange
+            JB.NoSqlDatabase.IWrapper wrapper = JB.NoSqlDatabase.Factory.CreateNoSqlDatabaseWrapper();
+
+            // Act
+            var itemTask = wrapper.DeleteItem<Dictionary<string, object>>("testDatabase", "testContainer", "c7d0192e-a58d-4583-aae5-9fe6302d2ab7", "/name");
+            itemTask.Wait();
+
+            // Assert
+            Assert.That(itemTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+        }
     }
 }

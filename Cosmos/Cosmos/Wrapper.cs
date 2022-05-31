@@ -179,12 +179,9 @@ namespace JB.NoSqlDatabase.Cosmos {
                     QueryDefinition queryDefinition = new QueryDefinition($"SELECT * FROM c WHERE c.id='{pItemId}'");
                     using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
 
-                        while (feedIterator?.HasMoreResults == true) {
+                        if (feedIterator?.HasMoreResults == true) {
                             var resultSet = await feedIterator.ReadNextAsync();
-
-                            foreach (T? f in resultSet) {
-                                itemsList.Add(f);
-                            }
+                            itemsList.Add(resultSet.First());
                         }
                     }
                 }
@@ -220,9 +217,9 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
-                    if (container != null) {
-                        ItemResponse<T> response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey("/id"));
-                        
+                    if (null != container) {
+                        var response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey("/name"), null, CancellationToken.None);
+
                         if (System.Net.HttpStatusCode.OK != response.StatusCode) {
                             rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
@@ -230,9 +227,55 @@ namespace JB.NoSqlDatabase.Cosmos {
                     }
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 2;
+                    rc.ErrorCode = 5;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
+
+            }
+            return rc;
+        }
+        public async Task<JB.Common.IReturnCode<T>> DeleteItem<T>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKey) {
+            IReturnCode<T> rc = new ReturnCode<T>();
+            Container? container = null;
+            IList<T> itemsList = new List<T>();
+
+            if (false == pPartitionKey.StartsWith('/')) {
+                pPartitionKey = '/' + pPartitionKey;
+            }
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
+
+                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
+                    container = getContainerRc.Data;
+                }
+
+                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                    rc.ErrorCode = getContainerRc.ErrorCode;
+                    ErrorWorker.AddError(getContainerRc, getContainerRc.ErrorCode);
+                }
+            }
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                try {
+                    if (container != null) {
+                        var resposne = await container.DeleteItemAsync<T>(pItemId, new PartitionKey(pPartitionKey));
+                        
+                        if (System.Net.HttpStatusCode.OK != resposne.StatusCode) {
+                            rc.ErrorCode = 5;
+                            ErrorWorker.AddError(rc, rc.ErrorCode);
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    rc.ErrorCode = 5;
+                    ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                }
+
+            }
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                rc.Data = itemsList.Count > 0 ? itemsList[0] : default;
             }
 
             return rc;
