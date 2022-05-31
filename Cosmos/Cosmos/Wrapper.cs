@@ -23,12 +23,12 @@ namespace JB.NoSqlDatabase.Cosmos {
                 DatabaseResponse response = await cosmosClient.CreateDatabaseIfNotExistsAsync(pDatabaseId);
                 
                 if (System.Net.HttpStatusCode.OK != response.StatusCode) {
-                    rc.ErrorCode = ErrorCodes.UNABLE_TO_CREATE_DATABASE;
+                    rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
                     ErrorWorker.AddError(rc, rc.ErrorCode);
                 }
             }
             catch (Exception e) {
-                rc.ErrorCode = 7;
+                rc.ErrorCode = ErrorCodes.UNABLE_TO_CREATE_DATABASE;
                 ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
             }
             
@@ -64,14 +64,14 @@ namespace JB.NoSqlDatabase.Cosmos {
                         ContainerResponse? response = await database.CreateContainerIfNotExistsAsync(pContainerName, pPartitionKey);
 
                         if (System.Net.HttpStatusCode.Created != response?.StatusCode &&
-                            System.Net.HttpStatusCode.OK != response.StatusCode) {
-                            rc.ErrorCode = ErrorCodes.UNABLE_TO_CREATE_CONTAINER;
+                            System.Net.HttpStatusCode.OK != response?.StatusCode) {
+                            rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
                         }
                     }
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 2;
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_CREATE_CONTAINER;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
             }
@@ -99,11 +99,17 @@ namespace JB.NoSqlDatabase.Cosmos {
             if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     if (container != null) {
-                        await container.CreateItemAsync(item);
+                        var response = await container.CreateItemAsync(item);
+
+                        if (System.Net.HttpStatusCode.Created != response?.StatusCode &&
+                            System.Net.HttpStatusCode.OK != response?.StatusCode) {
+                            rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
+                            ErrorWorker.AddError(rc, rc.ErrorCode);
+                        }
                     } 
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 2;
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_CREATE_ITEM;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
             }
@@ -144,7 +150,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                     }
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 3;
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_ITEMS;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
                 
@@ -186,7 +192,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                     }
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 5;
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_ITEMS;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
                 
@@ -227,7 +233,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                     }
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 5;
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_UPDATE_ITEM;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
 
@@ -260,15 +266,15 @@ namespace JB.NoSqlDatabase.Cosmos {
                 try {
                     if (container != null) {
                         var resposne = await container.DeleteItemAsync<T>(pItemId, new PartitionKey(pPartitionKey));
-                        
+
                         if (System.Net.HttpStatusCode.OK != resposne.StatusCode) {
-                            rc.ErrorCode = 5;
+                            rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
                         }
                     }
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 5;
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_DELETE_ITEM;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
 
@@ -299,7 +305,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
             }
             catch (Exception e) {
-                rc.ErrorCode = 7;
+                rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_DATABASE;
                 ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
             }
 
@@ -334,12 +340,12 @@ namespace JB.NoSqlDatabase.Cosmos {
                         rc.Data = container;
                     }
                     else {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_CONTAINER;
+                        rc.ErrorCode = ErrorCodes.NO_CONTAINER_RETURNED;
                         ErrorWorker.AddError(rc, rc.ErrorCode);
                     }
                 }
                 catch (Exception e) {
-                    rc.ErrorCode = 7;
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_CONTAINER;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
             }
