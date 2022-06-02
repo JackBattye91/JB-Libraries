@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Cosmos\NoSqlDatabase.csproj" />
+    <ProjectReference Include="..\..\Libs\Cosmos\NoSqlDatabase.csproj" />
   </ItemGroup>
 
 </Project>
