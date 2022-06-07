@@ -15,6 +15,8 @@ namespace JB.Calendar.GoogleCalendar {
     internal class Worker {
         internal static Event Convert(Interfaces.ICalendarEvent pEvent) {
             Event newEvent = new Event() {
+                Id = pEvent.Id,
+                Summary = pEvent.Description,
                 Start = new EventDateTime() { DateTime = pEvent.Start },
                 End = new EventDateTime() { DateTime = pEvent.Finish }
             };
@@ -23,6 +25,8 @@ namespace JB.Calendar.GoogleCalendar {
         }
         internal static Interfaces.ICalendarEvent Convert(Event pEvent) {
             Interfaces.ICalendarEvent newEvent = new Models.CalendarEvent() {
+                Id = pEvent.Id,
+                Description = pEvent.Summary,
                 Start = pEvent.Start.DateTime,
                 Finish = pEvent.End.DateTime
             };

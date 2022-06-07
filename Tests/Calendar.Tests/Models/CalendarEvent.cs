@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Calendar.GoogleCalendar.Models {
-    internal class CalendarEvent : Interfaces.ICalendarEvent {
+namespace Calendar.Tests.Models {
+    internal class CalendarEvent : JB.Calendar.Interfaces.ICalendarEvent {
         public string Id { get; set; }
         public string Description { get; set; }
         public DateTime? Start { get; set; }
