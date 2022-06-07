@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace JB.Calendar.GoogleCalendar {
     internal class Consts {
-        public const string APPLICATION_NAME = "";
+        public const string APPLICATION_NAME = "Listology";
     }
 }
