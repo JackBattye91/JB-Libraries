@@ -10,7 +10,6 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 
-
 namespace JB.Calendar.GoogleCalendar {
     internal class Wrapper : IWrapper {
         UserCredential? userCredential;
@@ -21,9 +20,8 @@ namespace JB.Calendar.GoogleCalendar {
 
         public async Task<IReturnCode<IList<Interfaces.ICalendarEvent>>> GetEvents() {
             IReturnCode<IList<Interfaces.ICalendarEvent>> rc = new ReturnCode<IList<Interfaces.ICalendarEvent>>();
-            IList<string> scopes = new List<string>();
+            IList<string> scopes = new List<string>(new string[] { CalendarService.Scope.Calendar });
             IList<Interfaces.ICalendarEvent> calendarEvents = new List<Interfaces.ICalendarEvent>();
-
 
             if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
@@ -33,41 +31,49 @@ namespace JB.Calendar.GoogleCalendar {
                 }
             }
 
-            try {
-                var service = new CalendarService(new BaseClientService.Initializer() {
-                    HttpClientInitializer = userCredential,
-                    ApplicationName = Consts.APPLICATION_NAME
-                });
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                try {
+                    var service = new CalendarService(new BaseClientService.Initializer() {
+                        HttpClientInitializer = userCredential,
+                        ApplicationName = Consts.APPLICATION_NAME
+                    });
 
-                // Define parameters of request.
-                EventsResource.ListRequest request = service.Events.List("primary");
-                request.TimeMin = DateTime.Now;
-                request.ShowDeleted = false;
-                request.SingleEvents = true;
-                request.MaxResults = 10;
-                request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+                    // Define parameters of request.
+                    EventsResource.ListRequest request = service.Events.List("primary");
+                    request.TimeMin = DateTime.Now;
+                    request.ShowDeleted = false;
+                    request.SingleEvents = true;
+                    request.MaxResults = 10;
+                    request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
 
-                // List events.
-                Events events = request.Execute();
-                if (events.Items != null && events.Items.Count > 0) {
-                    foreach (var eventItem in events.Items) {
-                        calendarEvents.Add(new Models.CalendarEvent() { 
-                            Start = eventItem.Start.DateTime, 
-                            Finish = eventItem.End.DateTime
-                        });
+                    // List events.
+                    Events events = request.Execute();
+                    if (events.Items != null && events.Items.Count > 0) {
+                        foreach (var eventItem in events.Items) {
+                            calendarEvents.Add(new Models.CalendarEvent() {
+                                Id = eventItem.Id,
+                                Description = eventItem.Summary,
+                                Start = eventItem.Start.DateTime,
+                                Finish = eventItem.End.DateTime
+                            });
+                        }
                     }
                 }
+                catch (Exception e) {
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_ITEMS;
+                    ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                }
             }
-            catch (Exception e) {
-                rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_ITEMS;
-                ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+
+            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                rc.Data = calendarEvents;
             }
 
             return rc;
         }
         public async Task<IReturnCode<bool>> AddEvent(Interfaces.ICalendarEvent pEvent, string pCalenderId) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
-            IList<string> scopes = new List<string>();
+            IList<string> scopes = new List<string>(new string[] { CalendarService.Scope.CalendarEvents });
 
             if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
@@ -180,6 +186,8 @@ namespace JB.Calendar.GoogleCalendar {
                     };
 
                     userCredential = await GoogleWebAuthorizationBroker.AuthorizeAsync(clientSecrets, pScopes, "user", CancellationToken.None);
+
+                    //await GoogleWebAuthorizationBroker.ReauthorizeAsync(userCredential, CancellationToken.None);
                 }
                 catch (Exception e) {
                     rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_USER_CREDENTIALS;
