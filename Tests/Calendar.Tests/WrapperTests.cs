@@ -44,18 +44,23 @@ namespace Calendar.Tests {
 
             // Arrange
             JB.Calendar.IWrapper wrapper = JB.Calendar.Factory.CreateCalendarWrapper();
+            long errorCode = 0;
 
-            JB.Calendar.Interfaces.ICalendarEvent newEvent = new Models.CalendarEvent() {
-                Start = DateTime.Now,
-                Finish = DateTime.Now.AddHours(2),
-                Description = "Test event"
-            };
+            Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>>? eventEventsTask = wrapper.GetEvents();
+            eventEventsTask.Wait();
+            if (eventEventsTask.Result.ErrorCode == 0) {
+                JB.Calendar.Interfaces.ICalendarEvent? newEvent = eventEventsTask.Result.Data.FirstOrDefault();
 
-            var getEventsTask = wrapper.UpdateEvent(newEvent, "primary");
-            getEventsTask.Wait();
+                if (newEvent != null) {
+                    Task<JB.Common.IReturnCode<bool>>? getEventsTask = wrapper.UpdateEvent(newEvent, "primary");
+                    getEventsTask.Wait();
+                    errorCode = getEventsTask.Result.ErrorCode;
+                }
+            }
+            
 
             // Assert
-            Assert.That(getEventsTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(errorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
         }
     }
 }
