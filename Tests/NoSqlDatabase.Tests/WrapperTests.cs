@@ -86,7 +86,7 @@ namespace NoSqlDatabase.Tests {
             JB.NoSqlDatabase.IWrapper wrapper = JB.NoSqlDatabase.Factory.CreateNoSqlDatabaseWrapper();
 
             // Act
-            var itemTask = wrapper.GetItem<Dictionary<string, object>>("testDatabase", "testContainer", "c7d0192e-a58d-4583-aae5-9fe6302d2ab7");
+            var itemTask = wrapper.GetItem<Dictionary<string, object>>("testDatabase", "testContainer", "b0aa32aa-cec9-41b8-9bf6-3f29097e635d");
             itemTask.Wait();
 
             // Assert
@@ -99,10 +99,12 @@ namespace NoSqlDatabase.Tests {
             JB.NoSqlDatabase.IWrapper wrapper = JB.NoSqlDatabase.Factory.CreateNoSqlDatabaseWrapper();
 
             Dictionary<string, object> updatedItem = new Dictionary<string, object>();
-            updatedItem.Add("name", "Sarah");
+            updatedItem.Add("id", "b0aa32aa-cec9-41b8-9bf6-3f29097e635d");
+            updatedItem.Add("name", "Jack Battye");
+            updatedItem.Add("testItems", new List<string>(new string[] { "Hello", "World", "John" }));
 
             // Act
-            var itemTask = wrapper.UpdateItem("testDatabase", "testContainer", updatedItem, "c7d0192e-a58d-4583-aae5-9fe6302d2ab7");
+            var itemTask = wrapper.UpdateItem("testDatabase", "testContainer", updatedItem, "b3cb6ebd-5278-4c84-8476-a50d7305b27d", "Jack Battye");
             itemTask.Wait();
 
             // Assert
@@ -115,7 +117,7 @@ namespace NoSqlDatabase.Tests {
             JB.NoSqlDatabase.IWrapper wrapper = JB.NoSqlDatabase.Factory.CreateNoSqlDatabaseWrapper();
 
             // Act
-            var itemTask = wrapper.DeleteItem<Dictionary<string, object>>("testDatabase", "testContainer", "c7d0192e-a58d-4583-aae5-9fe6302d2ab7", "/name");
+            var itemTask = wrapper.DeleteItem<Dictionary<string, object>>("testDatabase", "testContainer", "e87d175e-2203-462f-92e0-c9696d64ccb1", "Jack Battye");
             itemTask.Wait();
 
             // Assert

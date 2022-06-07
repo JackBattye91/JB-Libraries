@@ -204,7 +204,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<T>> UpdateItem<T>(string pDatabaseId, string pContainerId, T pItem, string pItemId) {
+        public async Task<IReturnCode<T>> UpdateItem<T>(string pDatabaseId, string pContainerId, T pItem, string pItemId, string pPartionKeyValue) {
             IReturnCode<T> rc = new ReturnCode<T>();
             Container? container = null;
 
@@ -224,7 +224,7 @@ namespace JB.NoSqlDatabase.Cosmos {
             if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     if (null != container) {
-                        var response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey("/name"), null, CancellationToken.None);
+                        var response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey(pPartionKeyValue));
 
                         if (System.Net.HttpStatusCode.OK != response.StatusCode) {
                             rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
@@ -240,14 +240,10 @@ namespace JB.NoSqlDatabase.Cosmos {
             }
             return rc;
         }
-        public async Task<JB.Common.IReturnCode<T>> DeleteItem<T>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKey) {
+        public async Task<JB.Common.IReturnCode<T>> DeleteItem<T>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
             IReturnCode<T> rc = new ReturnCode<T>();
             Container? container = null;
             IList<T> itemsList = new List<T>();
-
-            if (false == pPartitionKey.StartsWith('/')) {
-                pPartitionKey = '/' + pPartitionKey;
-            }
 
             if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
@@ -265,9 +261,9 @@ namespace JB.NoSqlDatabase.Cosmos {
             if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     if (container != null) {
-                        var resposne = await container.DeleteItemAsync<T>(pItemId, new PartitionKey(pPartitionKey));
+                        var resposne = await container.DeleteItemAsync<T>(pItemId, new PartitionKey(pPartitionKeyValue));
 
-                        if (System.Net.HttpStatusCode.OK != resposne.StatusCode) {
+                        if (System.Net.HttpStatusCode.OK != resposne.StatusCode && System.Net.HttpStatusCode.NoContent != resposne.StatusCode) {
                             rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
                         }
