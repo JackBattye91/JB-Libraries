@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.Weather.BBC_Weather.Models {
-    internal class GpsCoordinate : Interfaces.GpsCoordinate {
+    internal class GpsCoordinate : Interfaces.IGpsCoordinate {
         public float Latitude { get; set; }
         public float Longitude { get; set; }
 

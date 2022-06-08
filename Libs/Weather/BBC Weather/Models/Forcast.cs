@@ -10,7 +10,7 @@ namespace JB.Weather.BBC_Weather.Models {
         public DateTime Date { get; set; }
         public string? Description { get; set; }
         public string? Location { get; set; }
-        public Interfaces.GpsCoordinate? GpsLocation { get; set; }
+        public Interfaces.IGpsCoordinate? GpsLocation { get; set; }
         public float? TemeratureCelsius { get; set; }
         public float? TemeratureFahrenheit { get; set; }
         public float? WindSpeedMph { get; set; }
