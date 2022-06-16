@@ -17,6 +17,10 @@ namespace JB.Weather.BBC_Weather.Models {
         public string? WindDirection { get; set; }
         public float? Humidity { get; set; }
         public float? PressureMb { get; set; }
+        public float? MinimumTemeratureCelsius { get; set; }
+        public float? MinimumTemeratureFahrenheit { get; set; }
+        public float? MaximumTemeratureCelsius { get; set; }
+        public float? MaximumTemeratureFahrenheit { get; set; }
 
         public Forcast() {
             Title = string.Empty;
