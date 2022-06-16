@@ -1,4 +1,4 @@
-﻿using JB.Common;
+﻿using JB.Common.Errors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace JB.NoSqlDatabase.Cosmos {
     internal class Wrapper : JB.NoSqlDatabase.IWrapper {
-        CosmosClient? cosmosClient;
+        protected CosmosClient? cosmosClient;
 
         public Wrapper() {
             cosmosClient = null;
@@ -23,7 +23,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 DatabaseResponse response = await cosmosClient.CreateDatabaseIfNotExistsAsync(pDatabaseId);
                 
                 if (System.Net.HttpStatusCode.OK != response.StatusCode) {
-                    rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
+                    rc.ErrorCode = JB.Common.Errors.ErrorCodes.BAD_HTTP_STATUS_CODE;
                     ErrorWorker.AddError(rc, rc.ErrorCode);
                 }
             }
@@ -35,45 +35,79 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<Container>> GetContainer(string pDatabaseId, string pContainerId) {
-            return await GetCosmosContainer(pDatabaseId, pContainerId);
-        }
-        public async Task<IReturnCode<Container>> CreateContainer(string pDataBaseId, string pContainerName, string pPartitionKey) {
-            IReturnCode<Container> rc = new ReturnCode<Container>(JB.Common.ErrorCodes.SUCCESS);
-            Database? database = null;
+        public async Task<IReturnCode<Interfaces.IContainer>> GetContainer(string pDatabaseId, string pContainerId) {
+            IReturnCode<Interfaces.IContainer> rc = new ReturnCode<Interfaces.IContainer>();
+            Container? cosmosContainer = null;
+            Interfaces.IContainer? container = null;
 
-            if (!pPartitionKey.StartsWith('/')) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
+
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
+                    cosmosContainer = getContainerRc.Data;
+                }
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                    rc.ErrorCode = 7;
+                    ErrorWorker.CopyErrorCode(getContainerRc, rc);
+                }
+            }
+
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                container = new Models.Container() {
+                    ContainerName = pContainerId,
+                    PartitionKey = string.Empty,
+                    ContainerId = cosmosContainer?.Id ?? string.Empty
+                };
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<Interfaces.IContainer>> CreateContainer(string pDataBaseId, string pContainerName, string pPartitionKey) {
+            IReturnCode<Interfaces.IContainer> rc = new ReturnCode<Interfaces.IContainer>();
+            Database? database = null;
+            Interfaces.IContainer container = new Models.Container();
+            Container? cosmosContainer = null;
+
+            if (!pPartitionKey.StartsWith("/")) {
                 pPartitionKey = '/' + pPartitionKey;
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var getDatabaseRc = await GetCosmosDatabase(pDataBaseId);
 
-                if (JB.Common.ErrorCodes.SUCCESS == getDatabaseRc.ErrorCode) {
-                    database = getDatabaseRc.Data;
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getDatabaseRc.ErrorCode) {
+                    database = getDatabaseRc?.Data;
                 }
-                if (JB.Common.ErrorCodes.SUCCESS != getDatabaseRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getDatabaseRc?.ErrorCode) {
                     ErrorWorker.CopyErrorCode(getDatabaseRc, rc);
                 }
             }
 
-
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     if (database != null) {
-                        ContainerResponse? response = await database.CreateContainerIfNotExistsAsync(pContainerName, pPartitionKey);
+                        ContainerResponse response = await database.CreateContainerIfNotExistsAsync(pContainerName, pPartitionKey);
 
-                        if (System.Net.HttpStatusCode.Created != response?.StatusCode &&
-                            System.Net.HttpStatusCode.OK != response?.StatusCode) {
-                            rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
+                        if (System.Net.HttpStatusCode.Created != response?.StatusCode || System.Net.HttpStatusCode.OK != response?.StatusCode) {
+                            rc.ErrorCode = JB.Common.Errors.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
                         }
+                        else if (System.Net.HttpStatusCode.Created == response?.StatusCode || System.Net.HttpStatusCode.OK == response?.StatusCode) {
+                            cosmosContainer = response.Container;
+                        }
+
                     }
                 }
                 catch (Exception e) {
                     rc.ErrorCode = ErrorCodes.UNABLE_TO_CREATE_CONTAINER;
                     ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
                 }
+            }
+
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                container.ContainerId = cosmosContainer?.Id ?? string.Empty;
+                container.ContainerName = pContainerName;
+                container.PartitionKey = pPartitionKey;
             }
 
             return rc;
@@ -83,27 +117,27 @@ namespace JB.NoSqlDatabase.Cosmos {
             IReturnCode<T> rc = new ReturnCode<T>();
             Container? container = null;
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
-                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc?.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getContainerRc?.ErrorCode) {
                     container = getContainerRc.Data;
                 }
 
-                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc?.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getContainerRc?.ErrorCode) {
                     if (getContainerRc != null)
                         ErrorWorker.CopyErrorCode(getContainerRc, rc);
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     if (container != null) {
                         var response = await container.CreateItemAsync(item);
 
                         if (System.Net.HttpStatusCode.Created != response?.StatusCode &&
                             System.Net.HttpStatusCode.OK != response?.StatusCode) {
-                            rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
+                            rc.ErrorCode = JB.Common.Errors.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
                         }
                     } 
@@ -121,20 +155,20 @@ namespace JB.NoSqlDatabase.Cosmos {
             Container? container = null;
             IList<T> itemsList = new List<T>();
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
-                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
                     container = getContainerRc.Data;
                 }
 
-                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
                     rc.ErrorCode = getContainerRc.ErrorCode;
                     ErrorWorker.AddError(getContainerRc, getContainerRc.ErrorCode);
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
 
                 try {
                     QueryDefinition queryDefinition = new QueryDefinition($"SELECT * FROM c");
@@ -156,7 +190,53 @@ namespace JB.NoSqlDatabase.Cosmos {
                 
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                rc.Data = itemsList;
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<IList<T>>> GetItems<T>(string pDatabaseId, string pContainerId, string pQuery) {
+            IReturnCode<IList<T>> rc = new ReturnCode<IList<T>>();
+            Container? container = null;
+            IList<T> itemsList = new List<T>();
+
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+                var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
+
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
+                    container = getContainerRc.Data;
+                }
+
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                    rc.ErrorCode = getContainerRc.ErrorCode;
+                    ErrorWorker.AddError(getContainerRc, getContainerRc.ErrorCode);
+                }
+            }
+
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+
+                try {
+                    QueryDefinition queryDefinition = new QueryDefinition(pQuery);
+                    using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
+
+                        while (feedIterator?.HasMoreResults == true) {
+                            var resultSet = await feedIterator.ReadNextAsync();
+
+                            foreach (T? f in resultSet) {
+                                itemsList.Add(f);
+                            }
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_ITEMS;
+                    ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                }
+
+            }
+
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 rc.Data = itemsList;
             }
 
@@ -167,20 +247,20 @@ namespace JB.NoSqlDatabase.Cosmos {
             Container? container = null;
             IList<T> itemsList = new List<T>();
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
-                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
                     container = getContainerRc.Data;
                 }
 
-                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
                     rc.ErrorCode = getContainerRc.ErrorCode;
                     ErrorWorker.AddError(getContainerRc, getContainerRc.ErrorCode);
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     QueryDefinition queryDefinition = new QueryDefinition($"SELECT * FROM c WHERE c.id='{pItemId}'");
                     using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
@@ -198,7 +278,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 rc.Data = itemsList.Count > 0 ? itemsList[0] : default;
             }
 
@@ -208,26 +288,26 @@ namespace JB.NoSqlDatabase.Cosmos {
             IReturnCode<T> rc = new ReturnCode<T>();
             Container? container = null;
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
-                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc?.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getContainerRc?.ErrorCode) {
                     container = getContainerRc.Data;
                 }
 
-                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc?.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getContainerRc?.ErrorCode) {
                     if (getContainerRc != null)
                         ErrorWorker.CopyErrorCode(getContainerRc, rc);
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     if (null != container) {
                         var response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey(pPartionKeyValue));
 
                         if (System.Net.HttpStatusCode.OK != response.StatusCode) {
-                            rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
+                            rc.ErrorCode = JB.Common.Errors.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
                         }
                     }
@@ -240,31 +320,31 @@ namespace JB.NoSqlDatabase.Cosmos {
             }
             return rc;
         }
-        public async Task<JB.Common.IReturnCode<T>> DeleteItem<T>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
+        public async Task<JB.Common.Errors.IReturnCode<T>> DeleteItem<T>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
             IReturnCode<T> rc = new ReturnCode<T>();
             Container? container = null;
             IList<T> itemsList = new List<T>();
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
-                if (JB.Common.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == getContainerRc.ErrorCode) {
                     container = getContainerRc.Data;
                 }
 
-                if (JB.Common.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != getContainerRc.ErrorCode) {
                     rc.ErrorCode = getContainerRc.ErrorCode;
                     ErrorWorker.AddError(getContainerRc, getContainerRc.ErrorCode);
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     if (container != null) {
                         var resposne = await container.DeleteItemAsync<T>(pItemId, new PartitionKey(pPartitionKeyValue));
 
                         if (System.Net.HttpStatusCode.OK != resposne.StatusCode && System.Net.HttpStatusCode.NoContent != resposne.StatusCode) {
-                            rc.ErrorCode = JB.Common.ErrorCodes.BAD_HTTP_STATUS_CODE;
+                            rc.ErrorCode = JB.Common.Errors.ErrorCodes.BAD_HTTP_STATUS_CODE;
                             ErrorWorker.AddError(rc, rc.ErrorCode);
                         }
                     }
@@ -276,7 +356,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 rc.Data = itemsList.Count > 0 ? itemsList[0] : default;
             }
 
@@ -306,7 +386,7 @@ namespace JB.NoSqlDatabase.Cosmos {
             }
 
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 rc.Data = database;
             }
 
@@ -316,19 +396,19 @@ namespace JB.NoSqlDatabase.Cosmos {
             IReturnCode<Container> rc = new ReturnCode<Container>();
             Database? database = null;
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 var databaseRc = await GetCosmosDatabase(pDatabaseId);
 
-                if (JB.Common.ErrorCodes.SUCCESS == databaseRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS == databaseRc.ErrorCode) {
                     database = databaseRc.Data;
                 }
 
-                if (JB.Common.ErrorCodes.SUCCESS != databaseRc.ErrorCode) {
+                if (JB.Common.Errors.ErrorCodes.SUCCESS != databaseRc.ErrorCode) {
                     ErrorWorker.CopyErrorCode(databaseRc, rc);
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 try {
                     Container? container = database?.GetContainer(pContainerId);
 
