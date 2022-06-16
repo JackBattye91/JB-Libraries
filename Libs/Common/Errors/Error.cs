@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Common {
+namespace JB.Common.Errors {
     public interface IError {
         public long ErrorCode { get; set; }
         public string Message { get; set; }

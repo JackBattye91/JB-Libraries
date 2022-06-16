@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Common {
+namespace JB.Common.Errors {
     public class ErrorWorker {
         public static void AddError<T>(IReturnCode<T> rc, long pErrorCode) {
             AddError(rc, pErrorCode, null, null);
@@ -13,19 +13,22 @@ namespace JB.Common {
             AddError(rc, pErrorCode, pMessage, null);
         }
         public static void AddError<T>(IReturnCode<T> rc, long pErrorCode, string? pMessage, string? pStackTrace) {
-            rc.Errors.Add(new Error() { 
-                    ErrorCode = pErrorCode, 
-                    Message = pMessage ?? String.Empty,
-                    StackTrace = pStackTrace ?? Environment.StackTrace
-                });
+            rc.Errors.Add(new Error() {
+                ErrorCode = pErrorCode,
+                Message = pMessage ?? string.Empty,
+                StackTrace = pStackTrace ?? Environment.StackTrace
+            });
         }
 
-        public static void CopyErrorCode<T, U>(IReturnCode<T> pSource, IReturnCode<U> pDestination) {
-            pDestination.ErrorCode = pSource.ErrorCode;
+        public static void CopyErrorCode<T, U>(IReturnCode<T>? pSource, IReturnCode<U>? pDestination) {
+            if (pSource != null && pDestination != null) {
+                pDestination.ErrorCode = pSource.ErrorCode;
 
-            foreach (var srcCodes in pSource.Errors) {
-                pDestination.Errors.Add(srcCodes);
+                foreach (Error srcCodes in pSource.Errors) {
+                    pDestination?.Errors.Add(srcCodes);
+                }
             }
+            
         }
     }
 }

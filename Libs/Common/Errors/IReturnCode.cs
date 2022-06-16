@@ -4,22 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Common {
+namespace JB.Common.Errors {
     public interface IReturnCode<T> {
         public T? Data { get; set; }
         public long ErrorCode { get; set; }
-        public IList<JB.Common.Error> Errors { get; set; }
+        public IList<Error> Errors { get; set; }
     }
 
     public class ReturnCode<T> : IReturnCode<T> {
         public T? Data { get; set; }
         public long ErrorCode { get; set; }
-        public IList<JB.Common.Error> Errors { get; set; }
+        public IList<Error> Errors { get; set; }
 
         public ReturnCode(long pErrorCode = ErrorCodes.SUCCESS) {
-            Data = default(T);
+            Data = default;
             ErrorCode = pErrorCode;
-            Errors = new List<JB.Common.Error>();
+            Errors = new List<Error>();
         }
     }
 }
