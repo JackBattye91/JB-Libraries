@@ -18,7 +18,13 @@ namespace JB.Common {
             return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
-        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, string? content = null) {
+        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod method) {
+            return await GetStringResponse(url, method, "", new Dictionary<string, string>());
+        } 
+        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod method, string content) {
+            return await GetStringResponse(url, method, content, new Dictionary<string, string>());
+        }
+        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod method, string content, IDictionary<string, string> headers) {
             Errors.IReturnCode<string> rc = new Errors.ReturnCode<string>();
             string? response = null;
             HttpClient? client = null;
@@ -32,9 +38,9 @@ namespace JB.Common {
             if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 client = new HttpClient();
                 requestMessage = new HttpRequestMessage(method, url);
-
-                if (content != null) {
-                    requestMessage.Content = new StringContent(content);
+                requestMessage.Content = new StringContent(content);
+                foreach(KeyValuePair<string, string> header in headers) {
+                    requestMessage.Headers.Add(header.Key, header.Value);
                 }
                 
                 responseMessage = await client.SendAsync(requestMessage);
@@ -55,7 +61,10 @@ namespace JB.Common {
 
             return rc;
         }
-        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, IDictionary<string,string>? content = null) {
+        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod method, IDictionary<string,string> content) {
+            return await GetStringResponse(url, method, content, new Dictionary<string, string>());
+        }
+        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod method, IDictionary<string,string> content, IDictionary<string, string> headers) {
             Errors.IReturnCode<string> rc = new Errors.ReturnCode<string>();
             string? response = null;
             HttpClient? client = null;
@@ -69,9 +78,9 @@ namespace JB.Common {
             if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
                 client = new HttpClient();
                 requestMessage = new HttpRequestMessage(method, url);
-
-                if (content != null) {
-                    requestMessage.Content = new FormUrlEncodedContent(content);
+                requestMessage.Content = new FormUrlEncodedContent(content);
+                foreach(KeyValuePair<string, string> header in headers) {
+                    requestMessage.Headers.Add(header.Key, header.Value);
                 }
 
                 responseMessage = await client.SendAsync(requestMessage);
