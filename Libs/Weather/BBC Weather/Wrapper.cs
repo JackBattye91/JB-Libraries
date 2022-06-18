@@ -13,17 +13,13 @@ namespace JB.Weather.BBC_Weather {
         public async Task<JB.Common.Errors.IReturnCode<Interfaces.IForcast>> GetTodaysForcast(string pAreaCode) {
             JB.Common.Errors.IReturnCode<Interfaces.IForcast> rc = new JB.Common.Errors.ReturnCode<Interfaces.IForcast>();
             Interfaces.IForcast? forcast = null;
-            HttpClient? client = null;
 
             if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"https://weather-broker-cdn.api.bbci.co.uk/en/observation/rss/{ pAreaCode }");
-                client = new HttpClient();
-
-                HttpResponseMessage response = await client.SendAsync(httpRequest);
-                string responseText = await response.Content.ReadAsStringAsync();
-                if (HttpStatusCode.OK == response.StatusCode) {
+                JB.Common.Errors.IReturnCode<string> responseTextRc = await JB.Common.NetworkHelper.GetStringResponse($"https://weather-broker-cdn.api.bbci.co.uk/en/observation/rss/{ pAreaCode }", HttpMethod.Get);
+                
+                if (responseTextRc.ErrorCode == Common.Errors.ErrorCodes.SUCCESS) {
                     XmlDocument xmlDocument = new XmlDocument();
-                    xmlDocument.LoadXml(responseText);
+                    xmlDocument.LoadXml(responseTextRc.Data ?? "");
 
                     XmlElement? rssElement = xmlDocument["rss"];
                     XmlElement? channelElement = rssElement?["channel"];
@@ -44,20 +40,12 @@ namespace JB.Weather.BBC_Weather {
         public async Task<JB.Common.Errors.IReturnCode<IList<Interfaces.IForcast>>> Get3DayForcast(string pAreaCode) {
             JB.Common.Errors.IReturnCode<IList<Interfaces.IForcast>> rc = new JB.Common.Errors.ReturnCode<IList<Interfaces.IForcast>>();
             IList<Interfaces.IForcast> forcasts = new List<Interfaces.IForcast>();
-            HttpClient? client = null;
 
             if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"https://weather-broker-cdn.api.bbci.co.uk/en/forecast/rss/3day/{ pAreaCode }");
-                client = new HttpClient();
-
-                HttpResponseMessage response = await client.SendAsync(httpRequest);
-                if (HttpStatusCode.OK != response.StatusCode) {
-                    rc.ErrorCode = 3;
-                    JB.Common.Errors.ErrorWorker.AddError(rc, rc.ErrorCode);
-                }
-
-                if (HttpStatusCode.OK == response.StatusCode) {
-                    string responseText = await response.Content.ReadAsStringAsync();
+                Common.Errors.IReturnCode<string> httpRequestRc = await Common.NetworkHelper.GetStringResponse($"https://weather-broker-cdn.api.bbci.co.uk/en/forecast/rss/3day/{ pAreaCode }", HttpMethod.Get);
+                
+                if (httpRequestRc.ErrorCode == Common.Errors.ErrorCodes.SUCCESS) {
+                    string responseText = httpRequestRc.Data ?? "";
 
                     XmlDocument xmlDocument = new XmlDocument();
                     xmlDocument.LoadXml(responseText);
