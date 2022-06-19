@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using Microsoft.Data.Sqlite;
+using System.Reflection;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Wrapper : IWrapper {
@@ -83,5 +84,30 @@ namespace JB.SqlDatabase.SQlite {
             return rc;
         }
 
+        public async Task<IReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+            IReturnCode<T> rc = new ReturnCode<T>();
+            Interfaces.IDataReader? dataReader = null;
+            T? item = default;
+
+            if (rc.ErrorCode == ErrorCodes.SUCCESS) {
+                IReturnCode<Interfaces.IDataReader> dataReaderRc = await RunStoredProcedure(pDatabaseName, pStoreProcedureName, pParameters);
+
+                if (dataReaderRc.ErrorCode == ErrorCodes.SUCCESS) {
+                    dataReader = dataReaderRc.Data;
+                }
+                if (dataReaderRc.ErrorCode != ErrorCodes.SUCCESS) {
+                    ErrorWorker.AddError(rc, rc.ErrorCode);
+                }
+            }
+            
+            if (rc.ErrorCode == ErrorCodes.SUCCESS) {
+                PropertyInfo[] propInfo = typeof(T).GetProperties();
+                foreach(PropertyInfo prop in propInfo) {
+                    prop.SetValue(item, 0);
+                }
+            }
+
+            return rc;
+        }
     }
 }
