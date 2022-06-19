@@ -23,5 +23,10 @@ namespace JB.SqlDatabase.SQlite {
             int ordinal = sqlDataReader.GetOrdinal(pName);
             return sqlDataReader.GetValue(ordinal);
         }
+
+        public bool HasValue(string pName) {
+            DataTable dataTabe = sqlDataReader.GetSchemaTable();
+            throw new NotImplementedException();
+        }
     }
 }
