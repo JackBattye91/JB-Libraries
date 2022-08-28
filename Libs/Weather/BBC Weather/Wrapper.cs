@@ -13,7 +13,6 @@ namespace JB.Weather.BBC_Weather {
         public async Task<JB.Common.ReturnCode<Interfaces.IForcast>> GetTodaysForcast(string pAreaCode) {
             JB.Common.ReturnCode<Interfaces.IForcast> rc = new();
             Interfaces.IForcast? forcast = null;
-            HttpClient? client = null;
 
             if (rc.Success) {
                 HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"https://weather-broker-cdn.api.bbci.co.uk/en/observation/rss/{ pAreaCode }");
@@ -23,7 +22,7 @@ namespace JB.Weather.BBC_Weather {
                 string responseText = await response.Content.ReadAsStringAsync();
                 if (HttpStatusCode.OK == response.StatusCode) {
                     XmlDocument xmlDocument = new XmlDocument();
-                    xmlDocument.LoadXml(responseText);
+                    xmlDocument.LoadXml(responseTextRc.Data ?? "");
 
                     XmlElement? rssElement = xmlDocument["rss"];
                     XmlElement? channelElement = rssElement?["channel"];
@@ -44,7 +43,6 @@ namespace JB.Weather.BBC_Weather {
         public async Task<JB.Common.ReturnCode<IList<Interfaces.IForcast>>> Get3DayForcast(string pAreaCode) {
             JB.Common.ReturnCode<IList<Interfaces.IForcast>> rc = new();
             IList<Interfaces.IForcast> forcasts = new List<Interfaces.IForcast>();
-            HttpClient? client = null;
 
             if (rc.Success) {
                 HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, $"https://weather-broker-cdn.api.bbci.co.uk/en/forecast/rss/3day/{ pAreaCode }");

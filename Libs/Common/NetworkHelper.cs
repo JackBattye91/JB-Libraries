@@ -32,9 +32,9 @@ namespace JB.Common {
             if (rc.Success) {
                 client = new HttpClient();
                 requestMessage = new HttpRequestMessage(method, url);
-
-                if (content != null) {
-                    requestMessage.Content = new StringContent(content);
+                requestMessage.Content = new StringContent(content);
+                foreach(KeyValuePair<string, string> header in headers) {
+                    requestMessage.Headers.Add(header.Key, header.Value);
                 }
                 
                 responseMessage = await client.SendAsync(requestMessage);
@@ -54,8 +54,8 @@ namespace JB.Common {
 
             return rc;
         }
-        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, IDictionary<string,string>? content = null) {
-            ReturnCode<string> rc = new();
+        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, IDictionary<string,string>? content = null) {
+            Errors.IReturnCode<string> rc = new Errors.ReturnCode<string>();
             string? response = null;
             HttpClient? client = null;
             HttpRequestMessage? requestMessage = null;
@@ -68,9 +68,9 @@ namespace JB.Common {
             if (rc.Success) {
                 client = new HttpClient();
                 requestMessage = new HttpRequestMessage(method, url);
-
-                if (content != null) {
-                    requestMessage.Content = new FormUrlEncodedContent(content);
+                requestMessage.Content = new FormUrlEncodedContent(content);
+                foreach(KeyValuePair<string, string> header in headers) {
+                    requestMessage.Headers.Add(header.Key, header.Value);
                 }
 
                 responseMessage = await client.SendAsync(requestMessage);
