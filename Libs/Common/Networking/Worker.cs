@@ -7,36 +7,40 @@ using System.Net;
 using System.Net.Http;
 
 
-namespace JB.Common {
-    public class NetworkHelper {
-        public static string Base64Encode(string plainText) {
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-            return System.Convert.ToBase64String(plainTextBytes);
+namespace JB.Common.Networking
+{
+    public class Worker
+    {
+        public static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+            return Convert.ToBase64String(plainTextBytes);
         }
-        public static string Base64Decode(string base64EncodedData) {
-            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
-            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+        public static string Base64Decode(string base64EncodedData)
+        {
+            var base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
+            return Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
-        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, string? content = null) {
+        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method, IDictionary<string, string>? headers, string? content, string? mimeType) {
             ReturnCode<string> rc = new();
             string? response = null;
             HttpClient? client = null;
             HttpRequestMessage? requestMessage = null;
             HttpResponseMessage? responseMessage = null;
 
-            if (method == null) {
-                method = HttpMethod.Get;
-            }
-
             if (rc.Success) {
                 client = new HttpClient();
-                requestMessage = new HttpRequestMessage(method, url);
-                requestMessage.Content = new StringContent(content);
-                foreach(KeyValuePair<string, string> header in headers) {
-                    requestMessage.Headers.Add(header.Key, header.Value);
+                requestMessage = new HttpRequestMessage(method ?? HttpMethod.Get, url);
+
+                if (content != null) {
+                    requestMessage.Content = new StringContent(content, Encoding.UTF8, mimeType);
                 }
                 
+                foreach (KeyValuePair<string, string> header in headers ?? new Dictionary<string, string>()) {
+                    requestMessage.Headers.Add(header.Key, header.Value);
+                }
+
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
@@ -48,28 +52,29 @@ namespace JB.Common {
                 }
             }
 
-            if (rc.Success) {
+            if (rc.Success)
+            {
                 rc.Data = response;
             }
 
             return rc;
         }
-        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, IDictionary<string,string>? content = null) {
-            Errors.IReturnCode<string> rc = new Errors.ReturnCode<string>();
+        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method, IDictionary<string, string> content) {
+            ReturnCode<string> rc = new ReturnCode<string>();
             string? response = null;
             HttpClient? client = null;
             HttpRequestMessage? requestMessage = null;
             HttpResponseMessage? responseMessage = null;
 
-            if (method == null) {
-                method = HttpMethod.Get;
-            }
-
             if (rc.Success) {
                 client = new HttpClient();
-                requestMessage = new HttpRequestMessage(method, url);
-                requestMessage.Content = new FormUrlEncodedContent(content);
-                foreach(KeyValuePair<string, string> header in headers) {
+                requestMessage = new HttpRequestMessage(method ?? HttpMethod.Get, url);
+
+                if (content != null) {
+                    requestMessage.Content = new FormUrlEncodedContent(content);
+                }
+                
+                foreach (KeyValuePair<string, string> header in headers) {
                     requestMessage.Headers.Add(header.Key, header.Value);
                 }
 
