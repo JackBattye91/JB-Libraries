@@ -30,77 +30,77 @@ namespace JB.SqlDatabase.SQlite {
             throw new NotImplementedException();
         }
 
-        public async Task<IReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
-            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
+        public async Task<ReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
+            ReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
             Interfaces.IDataReader? dataReader = null;
 
             try {
                 SqliteConnection connection = new SqliteConnection();
                 await connection.OpenAsync();
 
-                SqlCommand command = connection.CreateCommand();
+                SqliteCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.Text;
                 command.CommandText = pQuery;
 
                 dataReader = new DataReader(await command.ExecuteReaderAsync());
             }
-            catch(Exception e) {
-                rc.ErrorCode = 9;
-                ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+            catch(Exception ex) {
+                rc = new(3, ex);
             }
 
-            if (rc.ErrorCode == ErrorCodes.SUCCESS) {
+            if (rc.Success) {
                 rc.Data = dataReader;
             }
             
             return rc;
         }
         
-        public async Task<IReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
-            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
+        public async Task<ReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+            ReturnCode<Interfaces.IDataReader> rc = new();
             Interfaces.IDataReader? dataReader = null;
 
             try {
-                SqliteConnection connection = new SqliteConnection();
-                await connection.OpenAsync();
+                if (rc.Success) {
+                    SqliteConnection connection = new SqliteConnection();
+                    await connection.OpenAsync();
 
-                SqlCommand command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                foreach(KeyValuePair<string, object> pair in pParameters) {
-                    sqlCommand.Parameters.AddWithValue(pair.Key, pair.Value);
+                    SqliteCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    foreach (KeyValuePair<string, object> pair in pParameters) {
+                        command.Parameters.AddWithValue(pair.Key, pair.Value);
+                    }
+
+                    dataReader = new DataReader(await command.ExecuteReaderAsync());
                 }
-
-                dataReader = new DataReader(await command.ExecuteReaderAsync());
             }
-            catch(Exception e) {
-                rc.ErrorCode = 9;
-                ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+            catch(Exception ex) {
+                rc = new(6, ex);
             }
 
-            if (rc.ErrorCode == ErrorCodes.SUCCESS) {
+            if (rc.Success) {
                 rc.Data = dataReader;
             }
             
             return rc;
         }
 
-        public async Task<IReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
-            IReturnCode<T> rc = new ReturnCode<T>();
+        public async Task<ReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+            ReturnCode<T> rc = new ReturnCode<T>();
             Interfaces.IDataReader? dataReader = null;
             T? item = default;
 
-            if (rc.ErrorCode == ErrorCodes.SUCCESS) {
-                IReturnCode<Interfaces.IDataReader> dataReaderRc = await RunStoredProcedure(pDatabaseName, pStoreProcedureName, pParameters);
+            if (rc.Success) {
+                ReturnCode<Interfaces.IDataReader> dataReaderRc = await RunStoredProcedure(pDatabaseName, pStoreProcedureName, pParameters);
 
-                if (dataReaderRc.ErrorCode == ErrorCodes.SUCCESS) {
+                if (dataReaderRc.Success) {
                     dataReader = dataReaderRc.Data;
                 }
-                if (dataReaderRc.ErrorCode != ErrorCodes.SUCCESS) {
-                    ErrorWorker.AddError(rc, rc.ErrorCode);
+                else {
+                    ErrorWorker.CopyErrors(dataReaderRc, rc);
                 }
             }
             
-            if (rc.ErrorCode == ErrorCodes.SUCCESS) {
+            if (rc.Success) {
                 PropertyInfo[] propInfo = typeof(T).GetProperties();
                 foreach(PropertyInfo prop in propInfo) {
                     prop.SetValue(item, 0);
