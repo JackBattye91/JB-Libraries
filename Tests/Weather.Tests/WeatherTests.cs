@@ -8,10 +8,10 @@ namespace Weather.Tests {
             // Act
             var getTodaysForcastTask = wrapper.GetTodaysForcast("2643123");
             getTodaysForcastTask.Wait();
-
+            var rc = getTodaysForcastTask.Result;
 
             // Assert
-            Assert.That(getTodaysForcastTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -22,9 +22,10 @@ namespace Weather.Tests {
             // Act
             var getTodaysForcastTask = wrapper.Get3DayForcast("2643123");
             getTodaysForcastTask.Wait();
+            var rc = getTodaysForcastTask.Result;
 
             // Assert
-            Assert.That(getTodaysForcastTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
     }
 }
