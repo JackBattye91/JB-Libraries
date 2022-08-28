@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using JB.Common;
 
 namespace JB.NoSqlDatabase.Cosmos {
     internal class ErrorCodes {
-        private const int BASE = 1 * JB.Common.ErrorCodes.API_BASE;
-        private const int LIB = 0 * JB.Common.ErrorCodes.LIBRARY_BASE;
+        private const int SCOPE = 2;
 
-        public const int UNABLE_TO_GET_CONTAINER =      BASE + LIB + 1;
-        public const int UNABLE_TO_CREATE_DATABASE =    BASE + LIB + 2;
-        public const int UNABLE_TO_CREATE_CONTAINER =   BASE + LIB + 3;
-        public const int UNABLE_TO_CREATE_ITEM  =       BASE + LIB + 4;
-        public const int UNABLE_TO_GET_ITEMS  =         BASE + LIB + 5;
-        public const int UNABLE_TO_UPDATE_ITEM  =       BASE + LIB + 6;
-        public const int UNABLE_TO_DELETE_ITEM  =       BASE + LIB + 7;
-        public const int UNABLE_TO_GET_DATABASE =       BASE + LIB + 8;
-        public const int NO_CONTAINER_RETURNED =        BASE + LIB + 9;
+        public static Error UNABLE_TO_GET_CONTAINER =      new(SCOPE, 1);
+        public static Error UNABLE_TO_CREATE_DATABASE =    new(SCOPE, 2);
+        public static Error UNABLE_TO_CREATE_CONTAINER =   new(SCOPE, 3);
+        public static Error UNABLE_TO_CREATE_ITEM  =       new(SCOPE, 4);
+        public static Error UNABLE_TO_GET_ITEMS  =         new(SCOPE, 5);
+        public static Error UNABLE_TO_UPDATE_ITEM  =       new(SCOPE, 6);
+        public static Error UNABLE_TO_DELETE_ITEM  =       new(SCOPE, 7);
+        public static Error UNABLE_TO_GET_DATABASE =       new(SCOPE, 8);
+        public static Error NO_CONTAINER_RETURNED =        new(SCOPE, 9);
     }
 }
