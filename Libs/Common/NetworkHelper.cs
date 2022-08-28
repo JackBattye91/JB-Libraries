@@ -18,8 +18,8 @@ namespace JB.Common {
             return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
-        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, string? content = null) {
-            Errors.IReturnCode<string> rc = new Errors.ReturnCode<string>();
+        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, string? content = null) {
+            ReturnCode<string> rc = new();
             string? response = null;
             HttpClient? client = null;
             HttpRequestMessage? requestMessage = null;
@@ -29,7 +29,7 @@ namespace JB.Common {
                 method = HttpMethod.Get;
             }
 
-            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 client = new HttpClient();
                 requestMessage = new HttpRequestMessage(method, url);
 
@@ -40,8 +40,7 @@ namespace JB.Common {
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc.ErrorCode = Errors.ErrorCodes.BAD_HTTP_STATUS_CODE;
-                    JB.Common.Errors.ErrorWorker.AddError(rc, rc.ErrorCode);
+                    rc = new(ErrorCodes.BAD_HTTP_STATUS_CODE);
                 }
 
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
@@ -49,14 +48,14 @@ namespace JB.Common {
                 }
             }
 
-            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 rc.Data = response;
             }
 
             return rc;
         }
-        public static async Task<Errors.IReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, IDictionary<string,string>? content = null) {
-            Errors.IReturnCode<string> rc = new Errors.ReturnCode<string>();
+        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method = null, IDictionary<string,string>? content = null) {
+            ReturnCode<string> rc = new();
             string? response = null;
             HttpClient? client = null;
             HttpRequestMessage? requestMessage = null;
@@ -66,7 +65,7 @@ namespace JB.Common {
                 method = HttpMethod.Get;
             }
 
-            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 client = new HttpClient();
                 requestMessage = new HttpRequestMessage(method, url);
 
@@ -77,8 +76,7 @@ namespace JB.Common {
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc.ErrorCode = Errors.ErrorCodes.BAD_HTTP_STATUS_CODE;
-                    JB.Common.Errors.ErrorWorker.AddError(rc, rc.ErrorCode);
+                    rc = new(ErrorCodes.BAD_HTTP_STATUS_CODE);
                 }
 
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
@@ -86,7 +84,7 @@ namespace JB.Common {
                 }
             }
 
-            if (JB.Common.Errors.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 rc.Data = response;
             }
 
