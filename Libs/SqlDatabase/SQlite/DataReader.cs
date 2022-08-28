@@ -1,4 +1,4 @@
-using JB.Common.Errors;
+using JB.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +9,10 @@ using Microsoft.Data.Sqlite;
 
 namespace JB.SqlDatabase.SQlite {
     internal class DataReader : Interfaces.IDataReader {
-        public bool HasRows { get => return sqlDataReader.HasRows; }
-        protected SqlDataReader sqlDataReader { get; set; }
+        public bool HasRows { get => sqlDataReader.HasRows; }
+        protected SqliteDataReader sqlDataReader { get; set; }
 
-        public DataReader(SqlDataReader pReader) {
+        public DataReader(SqliteDataReader pReader) {
             sqlDataReader = pReader;
         }
 
