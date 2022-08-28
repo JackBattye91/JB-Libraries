@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using JB.Common.Errors;
+using JB.Common;
 
 namespace JB.SqlDatabase {
     public interface IWrapper {
-        Task<IReturnCode<bool>> CreateDatabase(string pDatabaseName);
-        Task<IReturnCode<bool>> CreateTable(string pDatabaseName, string pTableName);
+        Task<ReturnCode<bool>> CreateDatabase(string pDatabaseName);
+        Task<ReturnCode<bool>> CreateTable(string pDatabaseName, string pTableName);
 
     }
 }
