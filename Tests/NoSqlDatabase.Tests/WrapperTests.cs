@@ -14,10 +14,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var database = wrapper.CreateDatabase("testDatabase");
             database.Wait();
-
+            var rc = database.Result;
 
             // Assert
-            Assert.That(database.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -28,9 +28,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var database = wrapper.CreateContainer("testDatabase", "testContainer", "name");
             database.Wait();
+            var rc = database.Result;
 
             // Assert
-            Assert.That(database.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
         [Test]
         public void GetContainer() {
@@ -40,9 +41,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var database = wrapper.GetContainer("testDatabase", "testContainer");
             database.Wait();
+            var rc = database.Result;
 
             // Assert
-            Assert.That(database.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -58,9 +60,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var itemTask = wrapper.AddItem("testDatabase", "testContainer", item);
             itemTask.Wait();
+            var rc = itemTask.Result;
 
             // Assert
-            Assert.That(itemTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -76,9 +79,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var itemTask = wrapper.GetItems<Dictionary<string, object>>("testDatabase", "testContainer");
             itemTask.Wait();
+            var rc = itemTask.Result;
 
             // Assert
-            Assert.That(itemTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
         [Test]
         public void GetItem() {
@@ -88,9 +92,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var itemTask = wrapper.GetItem<Dictionary<string, object>>("testDatabase", "testContainer", "b0aa32aa-cec9-41b8-9bf6-3f29097e635d");
             itemTask.Wait();
+            var rc = itemTask.Result;
 
             // Assert
-            Assert.That(itemTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -106,9 +111,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var itemTask = wrapper.UpdateItem("testDatabase", "testContainer", updatedItem, "b3cb6ebd-5278-4c84-8476-a50d7305b27d", "Jack Battye");
             itemTask.Wait();
+            var rc = itemTask.Result;
 
             // Assert
-            Assert.That(itemTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -119,9 +125,10 @@ namespace NoSqlDatabase.Tests {
             // Act
             var itemTask = wrapper.DeleteItem<Dictionary<string, object>>("testDatabase", "testContainer", "e87d175e-2203-462f-92e0-c9696d64ccb1", "Jack Battye");
             itemTask.Wait();
+            var rc = itemTask.Result;
 
             // Assert
-            Assert.That(itemTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
     }
 }
