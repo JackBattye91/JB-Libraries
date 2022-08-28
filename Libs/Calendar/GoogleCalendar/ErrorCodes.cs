@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using JB.Common;
 
 namespace JB.Calendar.GoogleCalendar {
     public class ErrorCodes {
         // XXX-XXX-XXXX
         // 200 000 0000
-        private const int BASE = 2 * JB.Common.ErrorCodes.API_BASE;
-        private const int LIB = 0 * JB.Common.ErrorCodes.LIBRARY_BASE;
+        private const int SCOPE = 1;
 
-        public const int UNABLE_TO_INSERT_NEW_ITEM =        BASE + LIB + 1;
-        public const int UNABLE_TO_UPDATE_ITEM =            BASE + LIB + 2;
-        public const int UNABLE_TO_DELETE_ITEM =            BASE + LIB + 3;
-        public const int UNABLE_TO_GET_USER_CREDENTIALS =   BASE + LIB + 4;
-        public const int UNABLE_TO_GET_ITEMS =              BASE + LIB + 5;
+        public static Error UNABLE_TO_INSERT_NEW_ITEM =         new Error(SCOPE, 1);
+        public static Error UNABLE_TO_UPDATE_ITEM =             new Error(SCOPE, 2);
+        public static Error UNABLE_TO_DELETE_ITEM =             new Error(SCOPE, 3);
+        public static Error UNABLE_TO_GET_USER_CREDENTIALS =    new Error(SCOPE, 4);
+        public static Error UNABLE_TO_GET_ITEMS =               new Error(SCOPE, 5);
     }
 }
