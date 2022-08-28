@@ -1,4 +1,4 @@
-﻿using JB.Common.Errors;
+﻿using JB.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Wrapper : IWrapper {
-        public async Task<IReturnCode<bool>> CreateDatabase(string pDatabaseName) {
+        public async Task<ReturnCode<bool>> CreateDatabase(string pDatabaseName) {
             SqliteConnection connection = new SqliteConnection();
             await connection.OpenAsync();
 
@@ -25,7 +25,7 @@ namespace JB.SqlDatabase.SQlite {
             throw new NotImplementedException();
         }
 
-        public Task<IReturnCode<bool>> CreateTable(string pDatabaseName, string pTableName) {
+        public Task<ReturnCode<bool>> CreateTable(string pDatabaseName, string pTableName) {
             throw new NotImplementedException();
         }
     }
