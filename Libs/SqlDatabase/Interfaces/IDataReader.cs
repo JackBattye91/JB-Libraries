@@ -1,4 +1,4 @@
-using JB.Common.Errors;
+using JB.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
