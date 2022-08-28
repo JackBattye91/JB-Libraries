@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace JB.Common.Errors {
     public class ErrorCodes {
-        public const int SUCCESS = 0;
-        public const int API_BASE = 10000000;
-        public const int LIBRARY_BASE = 10000;
+        public static int SCOPE = 1;
 
-        public const int BAD_HTTP_STATUS_CODE = 1;
+        public static Error.Code SUCCESS = new Error.Code(SCOPE, 0);
+        public static Error.Code BAD_HTTP_STATUS_CODE = new Error.Code(SCOPE, 1);
     }
 }
