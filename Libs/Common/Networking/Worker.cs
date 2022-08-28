@@ -59,7 +59,7 @@ namespace JB.Common.Networking
 
             return rc;
         }
-        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method, IDictionary<string, string> content) {
+        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method, IDictionary<string, string>? headers, IDictionary<string, string>? content) {
             ReturnCode<string> rc = new ReturnCode<string>();
             string? response = null;
             HttpClient? client = null;
@@ -74,7 +74,7 @@ namespace JB.Common.Networking
                     requestMessage.Content = new FormUrlEncodedContent(content);
                 }
                 
-                foreach (KeyValuePair<string, string> header in headers) {
+                foreach (KeyValuePair<string, string> header in headers ?? new Dictionary<string, string>()) {
                     requestMessage.Headers.Add(header.Key, header.Value);
                 }
 
