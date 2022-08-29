@@ -89,28 +89,26 @@ namespace JB.Common.Networking.JWT {
             return retValue;
         }
         public static bool Validate(IWebToken token, byte[] key) {
-            string signature = string.Empty;
-
             try {
-                // setup header
-                token.Header.Add("alg", "HS256");
-                token.Header.Add("typ", "JWT");
+                string tokenData = string.Empty;
+                string signature = string.Empty;
 
                 string? headerData = ConvertToBase64(token.Header);
                 if (string.IsNullOrEmpty(headerData)) {
                     return false;
                 }
+
                 // setup payload
                 string? payloadData = ConvertToBase64(token.Payload);
                 if (string.IsNullOrEmpty(payloadData)) {
                     return false;
                 }
 
-                signature = $"{headerData}.{payloadData}";
+                tokenData = $"{headerData}.{payloadData}";
 
                 using (HMACSHA256 sha = new HMACSHA256(key)) {
-                    byte[] signatureData = sha.ComputeHash(Encoding.UTF8.GetBytes(signature));
-                    signature += "." + Convert.ToBase64String(signatureData);
+                    byte[] signatureData = sha.ComputeHash(Encoding.UTF8.GetBytes(tokenData));
+                    signature = Convert.ToBase64String(signatureData);
                 }
 
                 if (signature.Equals(token.Signature)) {
