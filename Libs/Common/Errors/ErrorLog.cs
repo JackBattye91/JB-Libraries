@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Common.Errors {
+namespace JB.Common {
     public sealed class ErrorLog {
         public static IList<Error> Errors { get; private set; } = new List<Error>();
         public static void Log(Error error) { Errors.Add(error); }
