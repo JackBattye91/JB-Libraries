@@ -8,6 +8,7 @@ namespace JB.Common {
     public sealed class ErrorLog {
         public static IList<Error> Errors { get; private set; } = new List<Error>();
         public static void Log(Error error) { Errors.Add(error); }
+        public static void Log(Exception ex) { Errors.Add(new Error(1, ex)); }
 
         public static void Save() {
             if (Errors.Count != 0) {
