@@ -9,6 +9,7 @@ namespace JB.Common {
         public int Scope { get; set; }
         public int ErrorCode { get; set; }
         public Exception? Exception { get; set; }
+        public DateTime TimeStamp { get; protected set; }
 
         public Error() {
             Scope = 0;
@@ -20,12 +21,14 @@ namespace JB.Common {
             Scope = scope;
             ErrorCode = error;
             Exception = exception;
+            TimeStamp = DateTime.Now;
         }
 
         public Error(long code, Exception? exception = null) {
             Scope = (int)(code >> 32);
             ErrorCode = (int)(code & 0xFFFFFFFF);
             Exception = exception;
+            TimeStamp = DateTime.Now;
         }
     }
 
