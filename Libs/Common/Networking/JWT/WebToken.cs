@@ -11,12 +11,6 @@ using System.Buffers.Text;
 using System.Net;
 
 namespace JB.Common.Networking.JWT {
-    public struct SignatureDetails {
-        string Algorithm;
-        string Type;
-        string Key;
-    }
-
     public interface IWebToken {
         IDictionary<string, string> Header { get; }
         IDictionary<string, string> Payload { get; }
