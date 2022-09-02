@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Weather.Tests", "Tests\Weat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlDatabase", "Libs\SqlDatabase\SqlDatabase.csproj", "{2F448DDF-3118-49AC-8111-F56EB619CF53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing Console", "Tests\Testing Console\Testing Console.csproj", "{148AEC0D-AF68-4511-921C-69804A785B16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing Console", "Tests\Testing Console\Testing Console.csproj", "{148AEC0D-AF68-4511-921C-69804A785B16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
