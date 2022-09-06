@@ -26,7 +26,7 @@ namespace JB.Common {
 
         public Error(long code, Exception? exception = null) {
             Scope = (int)(code >> 32);
-            ErrorCode = (int)(code & 0xFFFFFFFF);
+            ErrorCode = (int)(code);
             Exception = exception;
             TimeStamp = DateTime.Now;
         }
