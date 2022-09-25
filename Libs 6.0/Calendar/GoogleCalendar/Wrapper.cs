@@ -174,8 +174,6 @@ namespace JB.Calendar.GoogleCalendar {
                     };
 
                     userCredential = await GoogleWebAuthorizationBroker.AuthorizeAsync(clientSecrets, pScopes, "user", CancellationToken.None);
-
-                    //await GoogleWebAuthorizationBroker.ReauthorizeAsync(userCredential, CancellationToken.None);
                 }
                 catch (Exception ex) {
                     rc.Errors.Add(new CalendarError(ErrorCodes.UNABLE_TO_GET_USER_CREDENTIALS, ex));
