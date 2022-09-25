@@ -22,7 +22,7 @@ namespace JB.Common.Networking
             return Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
-        public static async Task<ReturnCode<string>> GetStringResponse(string url, HttpMethod? method, IDictionary<string, string>? headers, string? content, string? mimeType) {
+        public static async Task<IReturnCode<string>> GetStringResponse(string url, HttpMethod? method, IDictionary<string, string>? headers, string? content, string? mimeType) {
             ReturnCode<string> rc = new();
             string? response = null;
             HttpClient? client = null;
@@ -44,9 +44,8 @@ namespace JB.Common.Networking
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc = new(ErrorCodes.BAD_HTTP_STATUS_CODE);
+                    rc.Errors.Add(new NetworkingError(ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
                 }
-
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
                     response = await responseMessage.Content.ReadAsStringAsync();
                 }
@@ -81,7 +80,7 @@ namespace JB.Common.Networking
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc = new(ErrorCodes.BAD_HTTP_STATUS_CODE);
+                    rc.Errors.Add(new NetworkingError(ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
                 }
 
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
