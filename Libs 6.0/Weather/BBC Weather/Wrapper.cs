@@ -7,35 +7,52 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Net;
 using System.Xml;
+using JB.Common;
 
-namespace JB.Weather.BBC_Weather {
+namespace JB.Weather.BBC_Weather
+{
     internal class Wrapper : IWrapper {
-        public async Task<JB.Common.ReturnCode<Interfaces.IForcast>> GetTodaysForcast(string pAreaCode) {
-            JB.Common.ReturnCode<Interfaces.IForcast> rc = new();
+        public async Task<IReturnCode<IForcast>> GetTodaysForcast(string pAreaCode) {
+            IReturnCode<IForcast> rc = new ReturnCode<IForcast>();
             Interfaces.IForcast? forcast = null;
             string responseText = string.Empty;
+            XmlNode? forcastNode = null;
 
-            if (rc.Success) {
-                var getHttpResponseRc = await JB.Common.Networking.Worker.GetStringResponse($"https://weather-broker-cdn.api.bbci.co.uk/en/observation/rss/{pAreaCode}", HttpMethod.Get, null, null, null);
+            try {
+                if (rc.Success) {
+                    var getHttpResponseRc = await JB.Common.Networking.Worker.GetStringResponse($"{Consts.Endpoints.BBC_RSS_TODAY_ENDPOINT}{pAreaCode}", HttpMethod.Get, null, null, null);
 
-                if (getHttpResponseRc.Success) {
-                    responseText = getHttpResponseRc.Data ?? string.Empty;
+                    if (getHttpResponseRc.Success) {
+                        responseText = getHttpResponseRc.Data ?? string.Empty;
+                    }
+                    else {
+                        JB.Common.ErrorWorker.CopyErrors(getHttpResponseRc, rc);
+                    }
                 }
-                else {
-                    JB.Common.ErrorWorker.CopyErrors(getHttpResponseRc, rc);
+
+                if (rc.Success) {
+                    XmlDocument xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(responseText);
+
+                    XmlElement? rssElement = xmlDocument["rss"];
+                    XmlElement? channelElement = rssElement?["channel"];
+                    XmlElement? titleElement = channelElement?["title"];
+
+                    forcastNode = channelElement?["item"];
+                }
+
+                if (rc.Success) {
+                    IReturnCode<IForcast> extractForcastRc = Worker.ExtractForcast(forcastNode);
+                    if (extractForcastRc.Success) {
+                        forcast = extractForcastRc.Data;
+                    }
+                    else {
+                        ErrorWorker.CopyErrors(extractForcastRc, rc);
+                    }
                 }
             }
-
-            if (rc.Success) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(responseText);
-
-                XmlElement? rssElement = xmlDocument["rss"];
-                XmlElement? channelElement = rssElement?["channel"];
-                XmlElement? titleElement = channelElement?["title"];
-
-                XmlNode? item = channelElement?["item"];
-                forcast = Worker.ExtractForcast(item);
+            catch(Exception ex) {
+                rc.Errors.Add(new WeatherError(ErrorCodes.GET_TODAYS_FORCAST_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -45,34 +62,47 @@ namespace JB.Weather.BBC_Weather {
             return rc;
         }
 
-        public async Task<JB.Common.ReturnCode<IList<Interfaces.IForcast>>> Get3DayForcast(string pAreaCode) {
-            JB.Common.ReturnCode<IList<Interfaces.IForcast>> rc = new();
-            IList<Interfaces.IForcast> forcasts = new List<Interfaces.IForcast>();
+        public async Task<IReturnCode<IList<Interfaces.IForcast>>> Get3DayForcast(string pAreaCode) {
+            IReturnCode<IList<IForcast>> rc = new ReturnCode<IList<IForcast>>();
+            IList<IForcast> forcasts = new List<Interfaces.IForcast>();
             string responseText = string.Empty;
 
-            if (rc.Success) {
-                var getHttpResponseRc = await JB.Common.Networking.Worker.GetStringResponse($"https://weather-broker-cdn.api.bbci.co.uk/en/forecast/rss/3day/{pAreaCode}", HttpMethod.Get, null, null, null);
+            try {
+                if (rc.Success) {
+                    var getHttpResponseRc = await JB.Common.Networking.Worker.GetStringResponse($"{Consts.Endpoints.BBC_RSS_3DAY_ENDPOINT}{pAreaCode}", HttpMethod.Get, null, null, null);
 
-                if (getHttpResponseRc.Success) {
-                    responseText = getHttpResponseRc.Data ?? string.Empty;
+                    if (getHttpResponseRc.Success) {
+                        responseText = getHttpResponseRc.Data ?? string.Empty;
+                    }
+                    else {
+                        JB.Common.ErrorWorker.CopyErrors(getHttpResponseRc, rc);
+                    }
                 }
-                else {
-                    JB.Common.ErrorWorker.CopyErrors(getHttpResponseRc, rc);
+
+                if (rc.Success) {
+                    XmlDocument xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(responseText);
+
+                    XmlElement? rssElement = xmlDocument["rss"];
+                    XmlElement? channelElement = rssElement?["channel"];
+                    XmlElement? titleElement = channelElement?["title"];
+                    XmlNodeList? itemNodes = channelElement?.GetElementsByTagName("item");
+
+                    for (int n = 0; n < itemNodes?.Count; n++) {
+                        IReturnCode<IForcast> extractForcastRc = Worker.ExtractForcast(itemNodes[n]);
+                        if (extractForcastRc.Success) {
+                            if (extractForcastRc.Data != null) {
+                                forcasts.Add(extractForcastRc.Data);
+                            }
+                        }
+                        else {
+                            ErrorWorker.CopyErrors(extractForcastRc, rc);
+                        }
+                    }
                 }
             }
-
-            if (rc.Success) {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(responseText);
-
-                XmlElement? rssElement = xmlDocument["rss"];
-                XmlElement? channelElement = rssElement?["channel"];
-                XmlElement? titleElement = channelElement?["title"];
-                XmlNodeList? itemNodes = channelElement?.GetElementsByTagName("item");
-
-                for (int n = 0; n < itemNodes?.Count; n++) {
-                    forcasts.Add(Worker.ExtractForcast(itemNodes[n]));
-                }
+            catch (Exception ex) {
+                rc.Errors.Add(new WeatherError(ErrorCodes.GET_3DAY_FORCAST_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
