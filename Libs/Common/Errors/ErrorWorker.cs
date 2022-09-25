@@ -6,20 +6,18 @@ using System.Threading.Tasks;
 
 namespace JB.Common {
     public class ErrorWorker {
-        public static void AddError<T>(ReturnCode<T> rc, long pErrorCode) {
+        public static void AddError<T>(IReturnCode<T> rc, long pErrorCode) {
             AddError(rc, pErrorCode);
         }
-        public static void AddError<T>(ReturnCode<T> rc, long pErrorCode, string? pMessage) {
-            AddError(rc, pErrorCode, new Exception(pMessage));
+        public static void AddError<T>(IReturnCode<T> rc, int pScope, int pCode, string? pMessage) {
+            AddError(rc, pScope, pCode, new Exception(pMessage));
         }
-        public static void AddError<T>(ReturnCode<T> rc, long pErrorCode, Exception ex) {
-            rc.Errors.Add(new Error(pErrorCode, ex));
+        public static void AddError<T>(IReturnCode<T> rc, int pScope, int pCode, Exception ex) {
+            rc.Errors.Add(new Error(pScope, pCode, ex));
         }
 
-        public static void CopyErrors<T, U>(ReturnCode<T>? pSource, ReturnCode<U>? pDestination) {
+        public static void CopyErrors<T, U>(IReturnCode<T>? pSource, IReturnCode<U>? pDestination) {
             if (pSource != null && pDestination != null) {
-                pSource.Success = pDestination.Success;
-
                 foreach (Error srcCodes in pSource.Errors) {
                     pDestination?.Errors.Add(srcCodes);
                 }
