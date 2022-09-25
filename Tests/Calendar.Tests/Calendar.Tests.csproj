@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Libs\Calendar\Calendar.csproj" />
+    <ProjectReference Include="..\..\Libs 6.0\Calendar\Calendar.csproj" />
   </ItemGroup>
 
 </Project>
