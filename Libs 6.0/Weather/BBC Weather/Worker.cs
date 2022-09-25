@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JB.Common;
+using JB.Weather.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,42 +9,52 @@ using System.Xml;
 
 namespace JB.Weather.BBC_Weather {
     internal class Worker {
-        public static Interfaces.IForcast ExtractForcast(XmlNode? pXmlNode) {
-            Interfaces.IForcast forcast = new Models.Forcast();
+        public static IReturnCode<IForcast> ExtractForcast(XmlNode? pXmlNode) {
+            IReturnCode<IForcast> rc = new ReturnCode<IForcast>();
+            IForcast forcast = new Models.Forcast();
 
-            string? description = pXmlNode?["description"]?.InnerText;
-            string[]? geoText = pXmlNode?["georss:point"]?.InnerText?.Split(" ");
-            IDictionary<string, string> descriptionDetails = ExtractDescriptionDetails(description);
+            try {
+                string? description = pXmlNode?["description"]?.InnerText;
+                string[]? geoText = pXmlNode?["georss:point"]?.InnerText?.Split(" ");
+                IDictionary<string, string> descriptionDetails = ExtractDescriptionDetails(description);
 
-            if (geoText != null) {
+                if (geoText != null) {
 
+                }
+
+                forcast.Title = pXmlNode?["title"]?.InnerText ?? "";
+                forcast.Date = DateTime.Parse(pXmlNode?["dc:date"]?.InnerText ?? "");
+                forcast.Description = description;
+                forcast.Location = pXmlNode?["description"]?.InnerText;
+                forcast.GpsLocation = null;
+
+                if (descriptionDetails.ContainsKey("temperature")) {
+                    var temps = ExtractTemperatures(descriptionDetails["temperature"]);
+
+                    forcast.TemeratureCelsius = temps["celsius"];
+                    forcast.TemeratureFahrenheit = temps["fahrenheit"];
+                }
+
+                if (descriptionDetails.ContainsKey("wind speed")) {
+                    forcast.WindSpeedMph = 0;// descriptionDetails["Wind Speed"];
+                }
+
+                if (descriptionDetails.ContainsKey("wind direction")) {
+                    forcast.WindDirection = descriptionDetails["wind direction"];
+                }
+
+                forcast.Humidity = 0;
+                forcast.PressureMb = 0;
+            }
+            catch (Exception ex) {
+                rc.Errors.Add(new WeatherError(ErrorCodes.EXTRACT_FORCAST_FAILED, System.Net.HttpStatusCode.InternalServerError, ex));
             }
 
-            forcast.Title = pXmlNode?["title"]?.InnerText ?? "";
-            forcast.Date = DateTime.Parse(pXmlNode?["dc:date"]?.InnerText ?? "");
-            forcast.Description = description;
-            forcast.Location = pXmlNode?["description"]?.InnerText;
-            forcast.GpsLocation = null;
-
-            if (descriptionDetails.ContainsKey("temperature")) {
-                var temps = ExtractTemperatures(descriptionDetails["temperature"]);
-
-                forcast.TemeratureCelsius = temps["celsius"];
-                forcast.TemeratureFahrenheit = temps["fahrenheit"];
+            if (rc.Success) {
+                rc.Data = forcast;
             }
 
-            if (descriptionDetails.ContainsKey("wind speed")) {
-                forcast.WindSpeedMph = 0;// descriptionDetails["Wind Speed"];
-            }
-
-            if (descriptionDetails.ContainsKey("wind direction")) {
-                forcast.WindDirection = descriptionDetails["wind direction"];
-            }
-
-            forcast.Humidity = 0;
-            forcast.PressureMb = 0;
-
-            return forcast;
+            return rc;
         }
 
         public static Interfaces.IGpsCoordinate? ExtractGpsCoordinate(string? geoText) {
