@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,9 @@ namespace JB.Common {
         int Code { get; set; }
         Exception? Exception { get; set; }
         DateTime TimeStamp { get; }
+    }
+    public interface INetworkError : IError {
+        HttpStatusCode StatusCode { get; set; }
     }
     public class Error : IError {
         public int Scope { get; protected set; }
@@ -35,12 +39,14 @@ namespace JB.Common {
 
     public interface IReturnCode<T> {
         bool Success { get; }
+        bool Failed { get; }
         T? Data { get; set; }
         IList<IError> Errors { get; set; }
     }
     public class ReturnCode<T> : IReturnCode<T> {
         public T? Data { get; set; }
         public bool Success { get { return Errors.Count == 0 ? true : false; } }
+        public bool Failed { get { return !Success; } }
         public IList<IError> Errors { get; set; }
 
         public ReturnCode() {
