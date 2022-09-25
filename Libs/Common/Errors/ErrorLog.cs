@@ -8,13 +8,12 @@ namespace JB.Common {
     public sealed class ErrorLog {
         public static IList<Error> Errors { get; private set; } = new List<Error>();
         public static void Log(Error error) { Errors.Add(error); }
-        public static void Log(Exception ex) { Errors.Add(new Error(1, ex)); }
 
         public static void Save() {
             if (Errors.Count != 0) {
                 using (StreamWriter writer = File.CreateText("ErrorLog.txt")) {
                     foreach (Error error in Errors) {
-                        writer.WriteLine($"{error.TimeStamp} - {error.ErrorCode} - {error.Exception?.Message} - {error.Exception?.StackTrace}");
+                        writer.WriteLine($"{error.TimeStamp} - { error.Scope} - {error.Code} - {error.Exception?.Message} - {error.Exception?.StackTrace}");
                     }
                 }
             }
