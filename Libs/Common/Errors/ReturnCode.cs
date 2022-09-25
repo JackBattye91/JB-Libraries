@@ -1,86 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.Common {
-    public class Error {
-        public int Scope { get; set; }
-        public int ErrorCode { get; set; }
+    public interface  IError {
+        int Scope { get; }
+        int Code { get; set; }
+        Exception? Exception { get; set; }
+        DateTime TimeStamp { get; }
+    }
+    public class Error : IError {
+        public int Scope { get; protected set; }
+        public int Code { get; set; }
         public Exception? Exception { get; set; }
         public DateTime TimeStamp { get; protected set; }
 
         public Error() {
             Scope = 0;
-            ErrorCode = 0;
+            Code = 0;
             Exception = null;
+            TimeStamp = DateTime.UtcNow;
         }
 
-        public Error(int scope, int error, Exception? exception = null) {
+        public Error(int scope, int code, Exception? exception = null) {
             Scope = scope;
-            ErrorCode = error;
-            Exception = exception;
-            TimeStamp = DateTime.Now;
-        }
-
-        public Error(long code, Exception? exception = null) {
-            Scope = (int)(code >> 32);
-            ErrorCode = (int)(code);
+            Code = code;
             Exception = exception;
             TimeStamp = DateTime.Now;
         }
     }
 
-    public class ReturnCode<T> {
+    public interface IReturnCode<T> {
+        bool Success { get; }
+        T? Data { get; set; }
+        IList<IError> Errors { get; set; }
+    }
+    public class ReturnCode<T> : IReturnCode<T> {
         public T? Data { get; set; }
-        public bool Success { get; set; }
-        public List<Error> Errors { get; set; }
+        public bool Success { get { return Errors.Count == 0 ? true : false; } }
+        public IList<IError> Errors { get; set; }
 
         public ReturnCode() {
             Data = default;
-            Success = true;
-            Errors = new List<Error>();
+            Errors = new List<IError>();
         }
 
         public ReturnCode(long code) {
             Data = default;
-            Success = code == 0 ? true : false;
-            Errors = new List<Error>();
+            Errors = new List<IError>();
         }
         public ReturnCode(Error error) {
             Data = default;
-            Success = error.ErrorCode == 0 ? true : false;
-            Errors = new List<Error>(new[] { error });
+            Errors = new List<IError>(new[] { error });
         }
 
-        public ReturnCode(long code, Exception ex) {
+        public ReturnCode(int scope, int code, Exception ex) {
             Data = default;
-            Success = code == 0 ? true : false;
-            Errors = new List<Error>(new[] { new Error(code, ex) });
+            Errors = new List<IError>(new[] { new Error(scope, code, ex) });
         }
 
         public ReturnCode(Error error, Exception ex) {
             Data = default;
-            Success = error.ErrorCode == 0 ? true : false;
             error.Exception = ex;
-            Errors = new List<Error>(new[] { error });
-        }
-
-        public ReturnCode(int scope, int error, Exception ex) {
-            Data = default;
-            Success = error == 0 ? true : false;
-            Errors = new List<Error>(new[] { new Error(scope, error, ex) });
-        }
-
-        public override bool Equals(object? obj) {
-            if (obj is bool) {
-                return ((obj as bool?) == Success);
-            }
-            return false;
-        }
-        public override int GetHashCode() {
-            return base.GetHashCode();
+            Errors = new List<IError>(new[] { error });
         }
     }
 }
