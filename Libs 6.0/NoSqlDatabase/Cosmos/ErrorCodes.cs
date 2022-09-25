@@ -9,14 +9,24 @@ namespace JB.NoSqlDatabase.Cosmos {
     internal class ErrorCodes {
         private const int SCOPE = 2;
 
-        public static Error UNABLE_TO_GET_CONTAINER =      new(SCOPE, 1);
-        public static Error UNABLE_TO_CREATE_DATABASE =    new(SCOPE, 2);
-        public static Error UNABLE_TO_CREATE_CONTAINER =   new(SCOPE, 3);
-        public static Error UNABLE_TO_CREATE_ITEM  =       new(SCOPE, 4);
-        public static Error UNABLE_TO_GET_ITEMS  =         new(SCOPE, 5);
-        public static Error UNABLE_TO_UPDATE_ITEM  =       new(SCOPE, 6);
-        public static Error UNABLE_TO_DELETE_ITEM  =       new(SCOPE, 7);
-        public static Error UNABLE_TO_GET_DATABASE =       new(SCOPE, 8);
-        public static Error NO_CONTAINER_RETURNED =        new(SCOPE, 9);
+        public const int GET_CONTAINER_FAILED = 1;
+        public const int CREATE_DATABASE_FAILED = 2;
+        public const int CREATE_CONTAINER_FAILED = 3;
+        public const int CREATE_ITEM_FAILED = 4;
+        public const int GET_ITEMS_FAILED = 5;
+        public const int UPDATE_ITEM_FAILED = 6;
+        public const int DELETE_ITEM_FAILED = 7;
+        public const int GET_DATABASE_FAILED = 8;
+        public const int NO_CONTAINER_RETURNED = 9;
+        public const int BAD_STATUS_CODE_FROM_CREATE_DATABASE = 10;
+        public const int BAD_STATUS_CODE_FROM_CREATE_CONTAINER = 11;
+        public const int ADD_ITEM_FAILED = 12;
+        public const int BAD_STATUS_CODE_FROM_ADD_ITEM = 13;
+        public const int GET_ITEM_FAILED = 14;
+        public const int BAD_STATUS_CODE_FROM_UPDATE_ITEM = 15;
+        public const int BAD_STATUS_CODE_FROM_DELETE_ITEM = 16;
+        public const int GET_COSMOS_DATABASE_FAILED = 17;
+        public const int BAD_STATUS_CODE_FROM_GET_COSMOS_DATABASE = 18;
+        public const int GET_COSMOS_CONTAINER_FAILED = 19;
     }
 }
