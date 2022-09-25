@@ -9,9 +9,9 @@ namespace Calendar.Tests {
             // Arrange
             JB.Calendar.IWrapper wrapper = JB.Calendar.Factory.CreateCalendarWrapper();
 
-            Task<JB.Common.ReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>> getEventsTask = wrapper.GetEvents();
+            Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>> getEventsTask = wrapper.GetEvents();
             getEventsTask.Wait();
-            JB.Common.ReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>> getEventRc = getEventsTask.Result;
+            JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>> getEventRc = getEventsTask.Result;
 
             // Assert
             Assert.That(getEventRc.Success, Is.EqualTo(true));
@@ -31,7 +31,7 @@ namespace Calendar.Tests {
                 Description = "Test event"
             };
 
-            Task<JB.Common.ReturnCode<bool>> getEventsTask = wrapper.AddEvent(newEvent, "primary");
+            Task<JB.Common.IReturnCode<bool>> getEventsTask = wrapper.AddEvent(newEvent, "primary");
             getEventsTask.Wait();
             var getEventsRc = getEventsTask.Result;
 
@@ -46,12 +46,12 @@ namespace Calendar.Tests {
 
 
             // Arrange
-            JB.Common.ReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>> rc = new();
+            JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>> rc = new JB.Common.ReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>();
             JB.Calendar.IWrapper wrapper = JB.Calendar.Factory.CreateCalendarWrapper();
             JB.Calendar.Interfaces.ICalendarEvent? calEvent = null;
 
             if (rc.Success) {
-                Task<JB.Common.ReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>> getEventTask = wrapper.GetEvents();
+                Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>> getEventTask = wrapper.GetEvents();
                 getEventTask.Wait();
                 var getEventRc = getEventTask.Result;
 
@@ -66,7 +66,7 @@ namespace Calendar.Tests {
             if (rc.Success) {
                 if (calEvent != null) {
                     calEvent.Finish = DateTime.Now.AddDays(2);
-                    Task<JB.Common.ReturnCode<bool>> updateEvenntTask = wrapper.UpdateEvent(calEvent, "primary");
+                    Task<JB.Common.IReturnCode<bool>> updateEvenntTask = wrapper.UpdateEvent(calEvent, "primary");
                     updateEvenntTask.Wait();
                     var updateEvenntRc = updateEvenntTask.Result;
 
@@ -87,10 +87,10 @@ namespace Calendar.Tests {
             Environment.SetEnvironmentVariable("clientSecret", "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");
 
             // Arrange
-            JB.Common.ReturnCode<bool> rc = new();
+            JB.Common.IReturnCode<bool> rc = new JB.Common.ReturnCode<bool>();
             JB.Calendar.IWrapper wrapper = JB.Calendar.Factory.CreateCalendarWrapper();
 
-            Task<JB.Common.ReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>>? getEventsTask = wrapper.GetEvents();
+            Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>>? getEventsTask = wrapper.GetEvents();
             getEventsTask.Wait();
             var getEventsRc = getEventsTask.Result;
 
@@ -99,7 +99,7 @@ namespace Calendar.Tests {
                 JB.Calendar.Interfaces.ICalendarEvent? newEvent = getEventsTask?.Result?.Data?.Where(x => x.Description == "Test event").FirstOrDefault();
 
                 if (newEvent != null) {
-                    Task<JB.Common.ReturnCode<bool>>? cancelEventTask = wrapper.CancelEvent(newEvent.Id, "primary");
+                    Task<JB.Common.IReturnCode<bool>>? cancelEventTask = wrapper.CancelEvent(newEvent.Id, "primary");
                     cancelEventTask.Wait();
                     var cancelEventRc = cancelEventTask.Result;
 
