@@ -34,21 +34,5 @@ namespace JB.Common.Networking.JWT {
             Payload = payload;
             Signature = string.Empty;
         }
-
-        public static IWebToken? Parse(string tokenString) {
-            WebToken token = new WebToken();
-            try {
-                string[] parts = tokenString.Split(".");
-
-                token.Header = Utilities.ConvertFromBase64(parts[0]) ?? new Dictionary<string, string>();
-                token.Payload = Utilities.ConvertFromBase64(parts[1]) ?? new Dictionary<string, string>();
-                token.Signature = parts[2];
-            }
-            catch(Exception ex) {
-                return null;
-            }
-
-            return token;
-        }
     }
 }
