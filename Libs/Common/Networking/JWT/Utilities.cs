@@ -1,98 +1,157 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace JB.Common.Networking.JWT {
     public sealed class Utilities {
-        public static string? Sign(IWebToken token, byte[] key) {
-            string retValue;
+        public static IReturnCode<string> Sign(IWebToken token, byte[] key) {
+            IReturnCode<string> rc = new ReturnCode<string>();
+            string? signedToken = null;
+            string? headerData = null;
+            string? payloadData = null;
 
             try {
-                // setup header
-                token.Header.Add("alg", "HS256");
-                token.Header.Add("typ", "JWT");
-                string? headerData = ConvertToBase64(token.Header);
-                if (string.IsNullOrEmpty(headerData)) {
-                    return null;
+                if (rc.Success) {
+                    // setup header
+                    token.Header.Add("alg", "HS256");
+                    token.Header.Add("typ", "JWT");
+
+                    IReturnCode<string> convertToBase64Rc = ConvertToBase64(token.Header);
+                    if (convertToBase64Rc.Success) {
+                        headerData = convertToBase64Rc.Data;
+                    }
+                    else {
+                        ErrorWorker.CopyErrors(convertToBase64Rc, rc);
+                    }
                 }
 
-                // setup payload
-                string? payloadData = ConvertToBase64(token.Payload);
-                if (string.IsNullOrEmpty(payloadData)) {
-                    return null;
+                if (rc.Success) {
+                    // setup payload
+                    IReturnCode<string> convertToBase64Rc = ConvertToBase64(token.Payload);
+                    if (convertToBase64Rc.Success) {
+                        payloadData = convertToBase64Rc.Data;
+                    }
+                    else {
+                        ErrorWorker.CopyErrors(convertToBase64Rc, rc);
+                    }
                 }
 
-                retValue = $"{headerData}.{payloadData}";
+                if (rc.Success) {
+                    signedToken = $"{headerData}.{payloadData}";
 
-                using (HMACSHA256 sha = new HMACSHA256(key)) {
-                    byte[] signatureData = sha.ComputeHash(Encoding.UTF8.GetBytes(retValue));
-                    retValue += "." + Convert.ToBase64String(signatureData);
+                    using (HMACSHA256 sha = new HMACSHA256(key)) {
+                        byte[] signatureData = sha.ComputeHash(Encoding.UTF8.GetBytes(signedToken));
+                        signedToken += "." + Convert.ToBase64String(signatureData);
+                    }
                 }
             }
             catch (Exception ex) {
-                return null;
+                rc.Errors.Add(new NetworkingError(ErrorCodes.SIGNING_TOKEN_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
-            return retValue;
+            if (rc.Success) {
+                rc.Data = signedToken;
+            }
+
+            return rc;
         }
-        public static bool Validate(IWebToken token, byte[] key) {
+        public static IReturnCode<bool> Validate(IWebToken token, byte[] key) {
+            IReturnCode<bool> rc = new ReturnCode<bool>();
+            string? headerData = null;
+            string? payloadData = null;
+            string signature = string.Empty;
+
             try {
-                string tokenData = string.Empty;
-                string signature = string.Empty;
-
-                string? headerData = ConvertToBase64(token.Header);
-                if (string.IsNullOrEmpty(headerData)) {
-                    return false;
+                if (rc.Success) {
+                    IReturnCode<string> convertHeaderToBase64Rc = ConvertToBase64(token.Header);
+                    if (convertHeaderToBase64Rc.Success) {
+                        headerData = convertHeaderToBase64Rc.Data;
+                    }
+                    else {
+                        ErrorWorker.CopyErrors(convertHeaderToBase64Rc, rc);
+                    }
                 }
 
-                // setup payload
-                string? payloadData = ConvertToBase64(token.Payload);
-                if (string.IsNullOrEmpty(payloadData)) {
-                    return false;
+                if (rc.Success) {
+                    IReturnCode<string> convertPayloadToBase64Rc = ConvertToBase64(token.Payload);
+                    if (convertPayloadToBase64Rc.Success) {
+                        payloadData = convertPayloadToBase64Rc.Data;
+                    }
+                    else {
+                        ErrorWorker.CopyErrors(convertPayloadToBase64Rc, rc);
+                    }
                 }
 
-                tokenData = $"{headerData}.{payloadData}";
+                if (rc.Success) {
+                    string tokenData = $"{headerData}.{payloadData}";
 
-                using (HMACSHA256 sha = new HMACSHA256(key)) {
-                    byte[] signatureData = sha.ComputeHash(Encoding.UTF8.GetBytes(tokenData));
-                    signature = Convert.ToBase64String(signatureData);
+                    using (HMACSHA256 sha = new HMACSHA256(key)) {
+                        byte[] signatureData = sha.ComputeHash(Encoding.UTF8.GetBytes(tokenData));
+                        signature = Convert.ToBase64String(signatureData);
+                    }
                 }
 
-                if (signature.Equals(token.Signature)) {
-                    return true;
+                if (rc.Success) {
+                    if (signature.Equals(token.Signature) == false) {
+                        rc.Errors.Add(new NetworkingError(ErrorCodes.TOKEN_SIGNATURE_DO_NOT_MATCH, HttpStatusCode.InternalServerError));
+                    }
                 }
             }
             catch (Exception ex) {
-
+                rc.Errors.Add(new NetworkingError(ErrorCodes.VALIDATE_TOKEN_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
-            return false;
+            return rc;
         }
 
-        public static string? ConvertToBase64(IDictionary<string, string> data) {
+        public static IReturnCode<string> ConvertToBase64(IDictionary<string, string> data) {
+            IReturnCode<string> rc = new ReturnCode<string>();
+            string? base64String = null;
+
             try {
-                string jsonData = JsonConvert.SerializeObject(data, Formatting.None);
-                return Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
+                if (rc.Success) {
+                    string jsonData = JsonConvert.SerializeObject(data, Formatting.None);
+                    base64String = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
+                }
+
+                if (string.IsNullOrEmpty(base64String)) {
+                    rc.Errors.Add(new NetworkingError(ErrorCodes.BAD_STATUS_CODE_RETURNED, HttpStatusCode.InternalServerError));
+                }
             }
             catch (Exception ex) {
-                return null;
+                rc.Errors.Add(new NetworkingError(ErrorCodes.CONVERT_TO_BASE_64_FAILED, HttpStatusCode.InternalServerError, ex));
             }
+
+            if (rc.Success) {
+                rc.Data = base64String;
+            }
+
+            return rc;
         }
         public static IDictionary<string, string>? ConvertFromBase64(string base64String) {
+            IReturnCode<IDictionary<string, string>> rc = new ReturnCode<IDictionary<string, string>>();
             IDictionary<string, string>? dic = new Dictionary<string, string>();
 
             try {
-                byte[] data = Convert.FromBase64String(base64String);
-                string plainText = Encoding.UTF8.GetString(data);
+                if (rc.Success) {
+                    byte[] data = Convert.FromBase64String(base64String);
+                    string plainText = Encoding.UTF8.GetString(data);
 
-                dic = JsonConvert.DeserializeObject<Dictionary<string, string>>(plainText);
+                    dic = JsonConvert.DeserializeObject<Dictionary<string, string>>(plainText);
+                }
             }
-            catch (Exception e) {
-                return null;
+            catch (Exception ex) {
+                rc.Errors.Add(new NetworkingError(ErrorCodes.CONVERT_FROM_BASE_64_FAILED, HttpStatusCode.InternalServerError, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = dic;
             }
 
             return dic;
