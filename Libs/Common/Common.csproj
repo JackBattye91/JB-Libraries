@@ -1,21 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <AssemblyName>JB_Library_$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>JB.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Common</Title>
+    <PackageId>$(AssemblyName)</PackageId>
+	<Authors>Jack Battye</Authors>
+    <Company>Jack Battye</Company>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <Compile Remove="Consts\**" />
+    <EmbeddedResource Remove="Consts\**" />
+    <None Remove="Consts\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Consts\" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>
