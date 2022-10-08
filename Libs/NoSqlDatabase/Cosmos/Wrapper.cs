@@ -138,7 +138,11 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     if (container != null) {
-                        var response = await container.CreateItemAsync(item);
+                        ItemResponse<T>? response = await container.CreateItemAsync(item);
+
+                        if (response.StatusCode == HttpStatusCode.Created) {
+                            item = response.Resource;
+                        }
 
                         if (HttpStatusCode.Created != response?.StatusCode && HttpStatusCode.OK != response?.StatusCode) {
                             rc.Errors.Add(new NoSqlDatabaseError(ErrorCodes.BAD_STATUS_CODE_FROM_ADD_ITEM, response?.StatusCode ?? HttpStatusCode.InternalServerError));
@@ -150,6 +154,10 @@ namespace JB.NoSqlDatabase.Cosmos {
                 rc.Errors.Add(new NoSqlDatabaseError(ErrorCodes.ADD_ITEM_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
+            if (rc.Success) {
+                rc.Data = item;
+            }
+
             return rc;
         }
         public async Task<IReturnCode<IList<T>>> GetItems<T>(string pDatabaseId, string pContainerId) {
@@ -159,7 +167,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             try {
                 if (rc.Success) {
-                    var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
+                    IReturnCode<Container> getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
                     if (getContainerRc.Success) {
                         container = getContainerRc.Data;
@@ -174,7 +182,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                     using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
 
                         while (feedIterator?.HasMoreResults == true) {
-                            var resultSet = await feedIterator.ReadNextAsync();
+                            FeedResponse<T> resultSet = await feedIterator.ReadNextAsync();
 
                             foreach (T? f in resultSet) {
                                 itemsList.Add(f);
@@ -214,7 +222,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                     QueryDefinition queryDefinition = new QueryDefinition(pQuery);
                     using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
                         while (feedIterator?.HasMoreResults == true) {
-                            var resultSet = await feedIterator.ReadNextAsync();
+                            FeedResponse<T> resultSet = await feedIterator.ReadNextAsync();
 
                             foreach (T? f in resultSet) {
                                 itemsList.Add(f);
@@ -240,7 +248,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             try {
                 if (rc.Success) {
-                    var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
+                    IReturnCode<Container> getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
                     if (getContainerRc.Success) {
                         container = getContainerRc.Data;
@@ -255,7 +263,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                     using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
 
                         if (feedIterator?.HasMoreResults == true) {
-                            var resultSet = await feedIterator.ReadNextAsync();
+                            FeedResponse<T> resultSet = await feedIterator.ReadNextAsync();
                             itemsList.Add(resultSet.First());
                         }
                     }
@@ -290,7 +298,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     if (null != container) {
-                        var response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey(pPartionKeyValue));
+                        ItemResponse<T> response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey(pPartionKeyValue));
 
                         if (HttpStatusCode.OK == response.StatusCode) {
                             item = response.Resource;
@@ -318,7 +326,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             try {
                 if (rc.Success) {
-                    var getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
+                    IReturnCode<Container> getContainerRc = await GetCosmosContainer(pDatabaseId, pContainerId);
 
                     if (getContainerRc.Success) {
                         container = getContainerRc.Data;
