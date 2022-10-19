@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,6 +22,16 @@ namespace JB.Common {
                 foreach (IError srcCodes in pSource.Errors) {
                     pDestination?.Errors.Add(srcCodes);
                 }
+            }
+        }
+
+        public static HttpStatusCode GetStatusCode<T>(IReturnCode<T> rc) {
+            if (rc.Success) {
+                return HttpStatusCode.OK;
+            }
+            else {
+                IError lastError = rc.Errors.Last();
+                return (lastError as INetworkError)?.StatusCode ?? HttpStatusCode.InternalServerError;
             }
         }
     }
