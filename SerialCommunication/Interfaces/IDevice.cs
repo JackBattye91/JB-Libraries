@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace SerialCommunication.Interfaces {
     public interface IDevice {
-
+        string Address { get; set; }
+        string Name { get; set; }
     }
 }
