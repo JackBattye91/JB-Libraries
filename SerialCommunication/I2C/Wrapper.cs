@@ -1,6 +1,4 @@
-﻿using SerialCommunication;
-using SerialCommunication.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +6,11 @@ using System.Threading.Tasks;
 using System.Device.I2c;
 using JB.SerialCommunication.I2C.Models;
 using JB.Common;
+using JB.SerialCommunication.Interfaces;
 
 namespace JB.SerialCommunication.I2C {
     internal class Wrapper : IWrapper {
-        public JB.Common.IReturnCode<IList<IDevice>> GetDevices() {
+        public IReturnCode<IList<IDevice>> GetDevices() {
             IReturnCode<IList<IDevice>> rc = new ReturnCode<IList<IDevice>>();
             IList<IDevice> devicesList = new List<IDevice>();
 
@@ -35,7 +34,7 @@ namespace JB.SerialCommunication.I2C {
             return rc;
         }
 
-        public JB.Common.IReturnCode<IDevice> AddDevice(string pAddress) {
+        public IReturnCode<IDevice> AddDevice(string pName, string pAddress) {
             JB.Common.IReturnCode<IDevice> rc = new JB.Common.ReturnCode<IDevice>();
             IDevice? device = null;
             int address = 0;
@@ -49,7 +48,7 @@ namespace JB.SerialCommunication.I2C {
 
                 if (rc.Success) {
                     I2cBus bus = I2cBus.Create(1);
-                    device = new Device("Arduino", bus.CreateDevice(address));
+                    device = new Device(pName, bus.CreateDevice(address));
                 }
             }
             catch(Exception ex) {
