@@ -1,4 +1,4 @@
-﻿using SerialCommunication.Interfaces;
+﻿using JB.SerialCommunication.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Device.I2c;
