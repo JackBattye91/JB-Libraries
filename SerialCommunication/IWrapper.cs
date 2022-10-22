@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JB.Common;
-using SerialCommunication.Interfaces;
+using JB.SerialCommunication.Interfaces;
 
-namespace SerialCommunication {
+namespace JB.SerialCommunication {
     public interface IWrapper {
         IReturnCode<IList<Interfaces.IDevice>> GetDevices();
-        IReturnCode<Interfaces.IDevice> AddDevice(string pAddress);
+        IReturnCode<Interfaces.IDevice> AddDevice(string pName, string pAddress);
         IReturnCode<bool> WriteData(byte[] pData, IDevice pDevice);
         IReturnCode<byte[]> ReadData(IDevice pDevice);
     }
