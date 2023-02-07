@@ -26,13 +26,13 @@ namespace JB.Common {
         }
 
         public static HttpStatusCode GetStatusCode<T>(IReturnCode<T> rc) {
-            if (rc.Success) {
-                return HttpStatusCode.OK;
+            foreach(IError error in rc.Errors) {
+                if (error is INetworkError) {
+                    return ((INetworkError)error).StatusCode;
+                }
             }
-            else {
-                IError lastError = rc.Errors.Last();
-                return (lastError as INetworkError)?.StatusCode ?? HttpStatusCode.InternalServerError;
-            }
+
+            return rc.Errors.Count == 0 ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
         }
     }
 }

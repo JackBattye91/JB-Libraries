@@ -7,66 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.Common {
-    public interface  IError {
-        int Scope { get; }
-        int Code { get; set; }
-        Exception? Exception { get; set; }
-        DateTime TimeStamp { get; }
-        HttpStatusCode StateCode { get; set; }
-    }
-    internal class Error : IError {
-        public int Scope { get; protected set; }
-        public int Code { get; set; }
-        public Exception? Exception { get; set; }
-        public DateTime TimeStamp { get; protected set; }
-        public HttpStatusCode StateCode { get; set; }
-
-        public Error() {
-            Scope = 0;
-            Code = 0;
-            Exception = null;
-            TimeStamp = DateTime.UtcNow;
-            StateCode = HttpStatusCode.OK;
-        }
-
-        public Error(int scope, int code, Exception? exception = null) {
-            Scope = scope;
-            Code = code;
-            Exception = exception;
-            TimeStamp = DateTime.Now;
-            StateCode = HttpStatusCode.OK;
-        }
-    }
-    internal class CommonError : IError {
-        public int Scope { get; protected set; }
-        public int Code { get; set; }
-        public Exception? Exception { get; set; }
-        public DateTime TimeStamp { get; protected set; }
-        public HttpStatusCode StateCode { get; set; }
-
-        public CommonError() {
-            Scope = 0;
-            Code = 0;
-            Exception = null;
-            TimeStamp = DateTime.Now;
-            StateCode = HttpStatusCode.OK;
-        }
-        public CommonError(int code, Exception? exception = null) {
-            Scope = 0;
-            Code = code;
-            Exception = exception;
-            TimeStamp = DateTime.Now;
-            StateCode = HttpStatusCode.OK;
-        }
-        public CommonError(int code, HttpStatusCode statusCode, Exception? exception = null) {
-            Scope = 0;
-            Code = code;
-            Exception = exception;
-            TimeStamp = DateTime.Now;
-            StateCode = statusCode;
-        }
-    }
-
     public interface IReturnCode<T> {
         bool Success { get; }
         bool Failed { get; }
