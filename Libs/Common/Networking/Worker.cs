@@ -44,7 +44,7 @@ namespace JB.Common.Networking
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc.Errors.Add(new CommonError(ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
+                    rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
                 }
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
                     response = await responseMessage.Content.ReadAsStringAsync();
@@ -80,7 +80,7 @@ namespace JB.Common.Networking
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc.Errors.Add(new CommonError(ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
+                    rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
                 }
 
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
