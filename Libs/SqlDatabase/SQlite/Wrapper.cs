@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Wrapper : IWrapper {
-        public async Task<ReturnCode<bool>> CreateDatabase(string pDatabaseName) {
+        public async Task<IReturnCode<bool>> CreateDatabase(string pDatabaseName) {
             SqliteConnection connection = new SqliteConnection();
             await connection.OpenAsync();
 
@@ -26,12 +26,12 @@ namespace JB.SqlDatabase.SQlite {
             throw new NotImplementedException();
         }
 
-        public Task<ReturnCode<bool>> CreateTable(string pDatabaseName, string pTableName) {
+        public Task<IReturnCode<bool>> CreateTable(string pDatabaseName, string pTableName) {
             throw new NotImplementedException();
         }
 
-        public async Task<ReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
-            ReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
+        public async Task<IReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
+            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
             Interfaces.IDataReader? dataReader = null;
 
             try {
@@ -45,7 +45,7 @@ namespace JB.SqlDatabase.SQlite {
                 dataReader = new DataReader(await command.ExecuteReaderAsync());
             }
             catch(Exception ex) {
-                rc = new(3, ex);
+                rc.Errors.Add(new Error(ErrorCodes.SCOPE, 6, ex));
             }
 
             if (rc.Success) {
@@ -55,8 +55,8 @@ namespace JB.SqlDatabase.SQlite {
             return rc;
         }
         
-        public async Task<ReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
-            ReturnCode<Interfaces.IDataReader> rc = new();
+        public async Task<IReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
             Interfaces.IDataReader? dataReader = null;
 
             try {
@@ -74,7 +74,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch(Exception ex) {
-                rc = new(6, ex);
+                rc.Errors.Add(new Error(ErrorCodes.SCOPE, 6, ex));
             }
 
             if (rc.Success) {
@@ -84,13 +84,13 @@ namespace JB.SqlDatabase.SQlite {
             return rc;
         }
 
-        public async Task<ReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
-            ReturnCode<T> rc = new ReturnCode<T>();
+        public async Task<IReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+            IReturnCode<T> rc = new ReturnCode<T>();
             Interfaces.IDataReader? dataReader = null;
             T? item = default;
 
             if (rc.Success) {
-                ReturnCode<Interfaces.IDataReader> dataReaderRc = await RunStoredProcedure(pDatabaseName, pStoreProcedureName, pParameters);
+                IReturnCode<Interfaces.IDataReader> dataReaderRc = await RunStoredProcedure(pDatabaseName, pStoreProcedureName, pParameters);
 
                 if (dataReaderRc.Success) {
                     dataReader = dataReaderRc.Data;
