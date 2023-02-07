@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,11 +12,13 @@ namespace JB.Calendar {
         public int Code { get; set; }
         public Exception? Exception { get; set; }
         public DateTime TimeStamp { get; protected set; }
+        public HttpStatusCode StatusCode { get; set; }
 
-        public CalendarError(int code, Exception? ex = null) {
+        public CalendarError(int code, Exception? exception = null) {
             Code = code;
-            Exception = ex;
+            Exception = exception;
             TimeStamp = DateTime.UtcNow;
+            StatusCode = HttpStatusCode.OK;
         }
     }
 }
