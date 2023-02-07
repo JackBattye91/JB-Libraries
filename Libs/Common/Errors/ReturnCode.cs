@@ -12,21 +12,21 @@ namespace JB.Common {
         int Code { get; set; }
         Exception? Exception { get; set; }
         DateTime TimeStamp { get; }
+        HttpStatusCode StateCode { get; set; }
     }
-    public interface INetworkError : IError {
-        HttpStatusCode StatusCode { get; set; }
-    }
-    public class Error : IError {
+    internal class Error : IError {
         public int Scope { get; protected set; }
         public int Code { get; set; }
         public Exception? Exception { get; set; }
         public DateTime TimeStamp { get; protected set; }
+        public HttpStatusCode StateCode { get; set; }
 
         public Error() {
             Scope = 0;
             Code = 0;
             Exception = null;
             TimeStamp = DateTime.UtcNow;
+            StateCode = HttpStatusCode.OK;
         }
 
         public Error(int scope, int code, Exception? exception = null) {
@@ -34,6 +34,36 @@ namespace JB.Common {
             Code = code;
             Exception = exception;
             TimeStamp = DateTime.Now;
+            StateCode = HttpStatusCode.OK;
+        }
+    }
+    internal class CommonError : IError {
+        public int Scope { get; protected set; }
+        public int Code { get; set; }
+        public Exception? Exception { get; set; }
+        public DateTime TimeStamp { get; protected set; }
+        public HttpStatusCode StateCode { get; set; }
+
+        public CommonError() {
+            Scope = 0;
+            Code = 0;
+            Exception = null;
+            TimeStamp = DateTime.Now;
+            StateCode = HttpStatusCode.OK;
+        }
+        public CommonError(int code, Exception? exception = null) {
+            Scope = 0;
+            Code = code;
+            Exception = exception;
+            TimeStamp = DateTime.Now;
+            StateCode = HttpStatusCode.OK;
+        }
+        public CommonError(int code, HttpStatusCode statusCode, Exception? exception = null) {
+            Scope = 0;
+            Code = code;
+            Exception = exception;
+            TimeStamp = DateTime.Now;
+            StateCode = statusCode;
         }
     }
 
@@ -45,7 +75,7 @@ namespace JB.Common {
     }
     public class ReturnCode<T> : IReturnCode<T> {
         public T? Data { get; set; }
-        public bool Success { get { return Errors.Count == 0 ? true : false; } }
+        public bool Success { get { return (Errors.Count == 0); } }
         public bool Failed { get { return !Success; } }
         public IList<IError> Errors { get; set; }
 
@@ -58,7 +88,7 @@ namespace JB.Common {
             Data = default;
             Errors = new List<IError>();
         }
-        public ReturnCode(Error error) {
+        public ReturnCode(IError error) {
             Data = default;
             Errors = new List<IError>(new[] { error });
         }
@@ -68,7 +98,7 @@ namespace JB.Common {
             Errors = new List<IError>(new[] { new Error(scope, code, ex) });
         }
 
-        public ReturnCode(Error error, Exception ex) {
+        public ReturnCode(IError error, Exception ex) {
             Data = default;
             error.Exception = ex;
             Errors = new List<IError>(new[] { error });
