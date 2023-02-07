@@ -6,4 +6,4 @@ This is a collection of commonly used libraries which can be imported into proje
 - 1 - Calendar
 - 2 - NoSqlDatabase
 - 3 - Weather
-- 4 - SqlDatabase
+- 4 - SqlDatabase - Sqlite
