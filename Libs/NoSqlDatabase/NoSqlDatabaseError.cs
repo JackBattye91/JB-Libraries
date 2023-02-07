@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.NoSqlDatabase {
-    internal class NoSqlDatabaseError : JB.Common.INetworkError {
+    internal class NoSqlDatabaseError : JB.Common.IError {
         public int Scope { get; } = ErrorCodes.SCOPE;
         public int Code { get; set; }
         public Exception? Exception { get; set; } 
