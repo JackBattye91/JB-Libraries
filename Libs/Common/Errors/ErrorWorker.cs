@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace JB.Common {
     public class ErrorWorker {
@@ -32,6 +33,12 @@ namespace JB.Common {
             else {
                 IError lastError = rc.Errors.Last();
                 return (lastError as INetworkError)?.StatusCode ?? HttpStatusCode.InternalServerError;
+            }
+        }
+
+        public static void LogErrors<T>(ILogger pLog, IReturnCode<T> rc) {
+            foreach(IError error in rc.Errors) {
+                pLog.LogError($"{error.Scope} - {error.Code} - {error.TimeStamp} - {error.Exception?.Message ?? string.Empty}");
             }
         }
     }
