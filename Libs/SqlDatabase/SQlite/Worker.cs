@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using JB.Common;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Worker {
-        public static IReturnCode<T> ParseData<T>(Interfaces.IDataReader? dataReader) where T : struct {
+        public static IReturnCode<T> ParseData<T>(Interfaces.IDataReader? dataReader) {
             IReturnCode<T> rc = new ReturnCode<T>();
-            T obj = default;
+            T? obj = default;
 
             try {
                 Type objType = typeof(T);
+                //var constructorInfo = objType.GetConstructor(objType);
+                //obj = (T)constructorInfo.Invoke(null);
+
                 var properties = objType.GetProperties();
 
                 while (dataReader?.NextRow() ?? false) {
