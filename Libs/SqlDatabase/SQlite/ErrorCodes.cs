@@ -14,5 +14,8 @@ namespace JB.SqlDatabase.SQlite {
         public const int RUN_STORE_PROCEDURE_FAILED = 4;
         public const int GET_DATA_FAILED = 5;
         public const int UNABLE_TO_OPEN_DATA_BASE = 6;
+        public const int UPDATE_DATA_FAILED = 7;
+        public const int INSERT_DATA_FAILED = 8;
+        public const int DELETE_DATA_FAILED = 9;
     }
 }
