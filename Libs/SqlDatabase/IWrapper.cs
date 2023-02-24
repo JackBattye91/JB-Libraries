@@ -11,6 +11,9 @@ namespace JB.SqlDatabase {
         Task<IReturnCode<bool>> CreateTable<T>(string pDatabaseName, string pTableName);
         Task<IReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery);
         Task<IReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters);
-        Task<IReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) where T : struct;
+        Task<IReturnCode<T>> Get<T>(string pDatabaseName, string pTableName, string pId);
+        Task<IReturnCode<T>> Insert<T>(string pDatabaseName, string pTableName, T pObject);
+        Task<IReturnCode<bool>> Delete<T>(string pDatabaseName, string pTableName, string pId);
+        Task<IReturnCode<T>> Update<T>(string pDatabaseName, string pTableName, T pObject);
     }
 }
