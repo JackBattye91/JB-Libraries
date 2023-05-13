@@ -40,9 +40,10 @@ name: .NET Core Desktop
 
 on:
   push:
-    branches: [ "Development" ]
-  pull_request:
-    branches: [ "Development" ]
+    branches: 
+    - Development
+    - Trunk
+  workflow_dispatch:
 
 jobs:
 
