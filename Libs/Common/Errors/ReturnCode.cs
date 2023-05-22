@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace JB.Common {
     public interface  IError {
         int Scope { get; }
-        int Code { get; set; }
+        int ErrorCode { get; set; }
         Exception? Exception { get; set; }
         DateTime TimeStamp { get; }
     }
@@ -18,22 +19,46 @@ namespace JB.Common {
     }
     public class Error : IError {
         public int Scope { get; protected set; }
-        public int Code { get; set; }
+        public int ErrorCode { get; set; }
         public Exception? Exception { get; set; }
         public DateTime TimeStamp { get; protected set; }
 
         public Error() {
             Scope = 0;
-            Code = 0;
+            ErrorCode = 0;
             Exception = null;
             TimeStamp = DateTime.UtcNow;
         }
 
         public Error(int scope, int code, Exception? exception = null) {
             Scope = scope;
-            Code = code;
+            ErrorCode = code;
             Exception = exception;
             TimeStamp = DateTime.Now;
+        }
+    }
+
+    public class NetworkError : INetworkError {
+        public int Scope { get; protected set; }
+        public int ErrorCode { get; set; }
+        public Exception? Exception { get; set; }
+        public DateTime TimeStamp { get; protected set; }
+        public HttpStatusCode StatusCode { get; set; }
+
+        public NetworkError() {
+            Scope = 0;
+            ErrorCode = 0;
+            Exception = null;
+            TimeStamp = DateTime.UtcNow;
+            StatusCode = HttpStatusCode.OK;
+        }
+
+        public NetworkError(int scope, int pErrorCode, HttpStatusCode pStatusCode, Exception? pException = null) {
+            Scope = scope;
+            ErrorCode = pErrorCode;
+            Exception = pException;
+            TimeStamp = DateTime.Now;
+            StatusCode = HttpStatusCode.OK;
         }
     }
 
