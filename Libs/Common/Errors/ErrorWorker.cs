@@ -38,7 +38,7 @@ namespace JB.Common {
 
         public static void LogErrors<T>(ILogger pLog, IReturnCode<T> rc) {
             foreach(IError error in rc.Errors) {
-                pLog.LogError($"{error.Scope} - {error.Code} - {error.TimeStamp} - {error.Exception?.Message ?? string.Empty}");
+                pLog.LogError($"{error.Scope} - {error.ErrorCode} - {error.TimeStamp} - {error.Exception?.Message ?? string.Empty}");
             }
         }
     }
