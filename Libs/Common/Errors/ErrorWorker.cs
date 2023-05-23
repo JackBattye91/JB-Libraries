@@ -14,7 +14,7 @@ namespace JB.Common {
         public static void AddError<T>(IReturnCode<T> rc, int pScope, int pCode, string? pMessage) {
             AddError(rc, pScope, pCode, new Exception(pMessage));
         }
-        public static void AddError<T>(IReturnCode<T> rc, int pScope, int pCode, Exception ex) {
+        public static void AddError<T>(IReturnCode<T> rc, int pScope, int pCode, Exception? ex) {
             rc.Errors.Add(new Error(pScope, pCode, ex));
         }
 
@@ -48,8 +48,6 @@ namespace JB.Common {
             foreach(IError error in rc.Errors) {
                 pLog.LogError($"{error.Scope} - {error.ErrorCode} - {error.TimeStamp} - {error.Exception?.Message ?? string.Empty}");
             }
-
-            return rc.Errors.Count == 0 ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
         }
     }
 }
