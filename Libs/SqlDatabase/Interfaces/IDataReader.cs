@@ -9,8 +9,11 @@ using Microsoft.Data.Sqlite;
 
 namespace JB.SqlDatabase.Interfaces {
     public interface IDataReader {
-        bool HasRows { get; }
-        void NextRow();
+        bool HasRows();
+        bool NextRow();
         object Get(string pName);
+        object Get(int pOrdinal);
+        bool HasValue(string pName);
+        int GetOrdinal(string pName);
     }
 }

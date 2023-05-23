@@ -70,7 +70,7 @@ namespace JB.Common {
     }
     public class ReturnCode<T> : IReturnCode<T> {
         public T? Data { get; set; }
-        public bool Success { get { return Errors.Count == 0 ? true : false; } }
+        public bool Success { get { return (Errors.Count == 0); } }
         public bool Failed { get { return !Success; } }
         public IList<IError> Errors { get; set; }
 
@@ -83,7 +83,7 @@ namespace JB.Common {
             Data = default;
             Errors = new List<IError>();
         }
-        public ReturnCode(Error error) {
+        public ReturnCode(IError error) {
             Data = default;
             Errors = new List<IError>(new[] { error });
         }
@@ -93,7 +93,7 @@ namespace JB.Common {
             Errors = new List<IError>(new[] { new Error(scope, code, ex) });
         }
 
-        public ReturnCode(Error error, Exception ex) {
+        public ReturnCode(IError error, Exception ex) {
             Data = default;
             error.Exception = ex;
             Errors = new List<IError>(new[] { error });

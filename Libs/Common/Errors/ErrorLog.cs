@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace JB.Common {
     public sealed class ErrorLog {
-        public static IList<Error> Errors { get; private set; } = new List<Error>();
-        public static void Log(Error error) { Errors.Add(error); }
+        public static IList<IError> Errors { get; private set; } = new List<IError>();
+        public static void Log(IError error) { Errors.Add(error); }
 
         public static void Save() {
             if (Errors.Count != 0) {

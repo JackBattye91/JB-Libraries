@@ -48,6 +48,8 @@ namespace JB.Common {
             foreach(IError error in rc.Errors) {
                 pLog.LogError($"{error.Scope} - {error.ErrorCode} - {error.TimeStamp} - {error.Exception?.Message ?? string.Empty}");
             }
+
+            return rc.Errors.Count == 0 ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
         }
     }
 }

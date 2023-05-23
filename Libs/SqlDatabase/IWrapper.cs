@@ -7,10 +7,10 @@ using JB.Common;
 
 namespace JB.SqlDatabase {
     public interface IWrapper {
-        Task<ReturnCode<bool>> CreateDatabase(string pDatabaseName);
-        Task<ReturnCode<bool>> CreateTable(string pDatabaseName, string pTableName);
-        Task<ReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery);
-        Task<ReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters);
-        Task<ReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters);
+        Task<IReturnCode<bool>> CreateDatabase(string pDatabaseName);
+        Task<IReturnCode<bool>> CreateTable<T>(string pDatabaseName, string pTableName);
+        Task<IReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery);
+        Task<IReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters);
+        Task<IReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) where T : struct;
     }
 }
