@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.Common {
-    public interface  IError {
+    public interface IError {
         int Scope { get; }
         int ErrorCode { get; set; }
         Exception? Exception { get; set; }
