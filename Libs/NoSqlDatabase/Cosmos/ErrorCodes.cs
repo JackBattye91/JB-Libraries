@@ -7,7 +7,7 @@ using JB.Common;
 
 namespace JB.NoSqlDatabase.Cosmos {
     internal class ErrorCodes {
-        private const int SCOPE = 2;
+        public const int SCOPE = 2;
 
         public const int GET_CONTAINER_FAILED = 1;
         public const int CREATE_DATABASE_FAILED = 2;
