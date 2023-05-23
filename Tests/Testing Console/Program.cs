@@ -19,7 +19,7 @@ namespace JB {
         static void Main(string[] args) {
             JB.SqlDatabase.IWrapper sqlWrapper = JB.SqlDatabase.Factory.CreateSqlWrapperInstance();
 
-            sqlWrapper.CreateTable("TestDB", "Table1");
+            sqlWrapper.CreateTable<string>("TestDB", "Table1");
         }
     }
 }
