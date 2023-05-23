@@ -31,8 +31,16 @@ namespace JB.Common {
                 return HttpStatusCode.OK;
             }
             else {
-                IError lastError = rc.Errors.Last();
-                return (lastError as INetworkError)?.StatusCode ?? HttpStatusCode.InternalServerError;
+                HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+
+                foreach(IError error in rc.Errors) {
+                    if (error is INetworkError) {
+                        statusCode = (error as INetworkError)!.StatusCode;
+                        break;
+                    }
+                }
+
+                return statusCode;
             }
         }
 
