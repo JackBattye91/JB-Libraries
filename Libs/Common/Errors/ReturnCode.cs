@@ -58,7 +58,7 @@ namespace JB.Common {
             ErrorCode = pErrorCode;
             Exception = pException;
             TimeStamp = DateTime.Now;
-            StatusCode = HttpStatusCode.OK;
+            StatusCode = pStatusCode;
         }
     }
 
