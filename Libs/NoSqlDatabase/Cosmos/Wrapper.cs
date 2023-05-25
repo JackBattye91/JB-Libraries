@@ -160,6 +160,27 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
+        public async Task<IReturnCode<Tinterface>> AddItem<Tinterface, Tmodel>(string pDatabaseId, string pContainerId, Tinterface pItem) where Tmodel : class, Tinterface {
+            IReturnCode<Tinterface> rc = new ReturnCode<Tinterface>();
+            Tinterface? interfaceItem = default;
+
+            if (rc.Success) {
+                IReturnCode<Tinterface> getItemsRc = await AddItem<Tinterface>(pDatabaseId, pContainerId, pItem);
+
+                if (getItemsRc.Success) {
+                    interfaceItem = getItemsRc.Data;
+                }
+                if (getItemsRc.Failed) {
+                    ErrorWorker.CopyErrors(getItemsRc, rc);
+                }
+            }
+
+            if (rc.Success) {
+                rc.Data = interfaceItem;
+            }
+
+            return rc;
+        }
         public async Task<IReturnCode<IList<T>>> GetItems<T>(string pDatabaseId, string pContainerId) {
             IReturnCode<IList<T>> rc = new ReturnCode<IList<T>>();
             Container? container = null;
@@ -197,6 +218,29 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             if (rc.Success) {
                 rc.Data = itemsList;
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<IList<Tinterface>>> GetItems<Tinterface, Tmodel>(string pDatabaseId, string pContainerId) where Tmodel : Tinterface {
+            IReturnCode<IList<Tinterface>> rc = new ReturnCode<IList<Tinterface>>();
+            IList<Tinterface> interfaceList = new List<Tinterface>();
+
+            if (rc.Success) {
+                IReturnCode<IList<Tmodel>> getItemsRc = await GetItems<Tmodel>(pDatabaseId, pContainerId);
+
+                if (getItemsRc.Success) {
+                    foreach(Tmodel model in getItemsRc.Data!) {
+                        interfaceList.Add(model);
+                    }
+                }
+                if (getItemsRc.Failed) {
+                    ErrorWorker.CopyErrors(getItemsRc, rc);
+                }
+            }
+
+            if (rc.Success) {
+                rc.Data = interfaceList;
             }
 
             return rc;
@@ -241,6 +285,29 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
+        public async Task<IReturnCode<IList<Tinterface>>> GetItems<Tinterface, Tmodel>(string pDatabaseId, string pContainerId, string pQuery) where Tmodel : Tinterface {
+            IReturnCode<IList<Tinterface>> rc = new ReturnCode<IList<Tinterface>>();
+            IList<Tinterface> interfaceList = new List<Tinterface>();
+
+            if (rc.Success) {
+                IReturnCode<IList<Tmodel>> getItemsRc = await GetItems<Tmodel>(pDatabaseId, pContainerId, pQuery);
+
+                if (getItemsRc.Success) {
+                    foreach (Tmodel model in getItemsRc.Data!) {
+                        interfaceList.Add(model);
+                    }
+                }
+                if (getItemsRc.Failed) {
+                    ErrorWorker.CopyErrors(getItemsRc, rc);
+                }
+            }
+
+            if (rc.Success) {
+                rc.Data = interfaceList;
+            }
+
+            return rc;
+        }
         public async Task<IReturnCode<T>> GetItem<T>(string pDatabaseId, string pContainerId, string pItemId) {
             IReturnCode<T> rc = new ReturnCode<T>();
             Container? container = null;
@@ -275,6 +342,27 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             if (rc.Success) {
                 rc.Data = itemsList.Count > 0 ? itemsList[0] : default;
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<Tinterface>> GetItem<Tinterface, Tmodel>(string pDatabaseId, string pContainerId, string pItemId) where Tmodel : class, Tinterface {
+            IReturnCode<Tinterface> rc = new ReturnCode<Tinterface>();
+            Tinterface? interfaceItem = default;
+
+            if (rc.Success) {
+                IReturnCode<Tmodel> getItemsRc = await GetItem<Tmodel>(pDatabaseId, pContainerId, pItemId);
+
+                if (getItemsRc.Success) {
+                    interfaceItem = getItemsRc.Data!;
+                }
+                if (getItemsRc.Failed) {
+                    ErrorWorker.CopyErrors(getItemsRc, rc);
+                }
+            }
+
+            if (rc.Success) {
+                rc.Data = interfaceItem;
             }
 
             return rc;
@@ -316,6 +404,27 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             if (rc.Success) {
                 rc.Data = item;
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<Tinterface>> UpdateItem<Tinterface, Tmodel>(string pDatabaseId, string pContainerId, Tinterface pItem, string pItemId, string pPartionKeyValue) where Tmodel : class, Tinterface {
+            IReturnCode<Tinterface> rc = new ReturnCode<Tinterface>();
+            Tinterface? interfaceItem = default;
+
+            if (rc.Success) {
+                IReturnCode<Tinterface> updateItemsRc = await UpdateItem(pDatabaseId, pContainerId, pItem, pItemId, pPartionKeyValue);
+
+                if (updateItemsRc.Success) {
+                    interfaceItem = updateItemsRc.Data;
+                }
+                if (updateItemsRc.Failed) {
+                    ErrorWorker.CopyErrors(updateItemsRc, rc);
+                }
+            }
+
+            if (rc.Success) {
+                rc.Data = interfaceItem;
             }
 
             return rc;
