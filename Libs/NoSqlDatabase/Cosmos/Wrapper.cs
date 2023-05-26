@@ -162,10 +162,10 @@ namespace JB.NoSqlDatabase.Cosmos {
         }
         public async Task<IReturnCode<Tinterface>> AddItem<Tinterface, Tmodel>(string pDatabaseId, string pContainerId, Tinterface pItem) where Tmodel : class, Tinterface {
             IReturnCode<Tinterface> rc = new ReturnCode<Tinterface>();
-            Tinterface? interfaceItem = default;
+            Tinterface? interfaceItem = default(Tmodel);
 
             if (rc.Success) {
-                IReturnCode<Tinterface> getItemsRc = await AddItem<Tinterface>(pDatabaseId, pContainerId, pItem);
+                IReturnCode<Tmodel> getItemsRc = await AddItem<Tmodel>(pDatabaseId, pContainerId, (Tmodel)pItem!);
 
                 if (getItemsRc.Success) {
                     interfaceItem = getItemsRc.Data;
