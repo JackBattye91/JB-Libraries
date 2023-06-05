@@ -386,7 +386,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     if (null != container) {
-                        ItemResponse<T> response = await container.ReplaceItemAsync(pItem, pItemId, new PartitionKey(pPartionKeyValue));
+                        ItemResponse<T> response = await container.ReplaceItemAsync<T>(pItem, pItemId, new PartitionKey(pPartionKeyValue), new ItemRequestOptions(), new CancellationToken());
 
                         if (HttpStatusCode.OK == response.StatusCode) {
                             item = response.Resource;
@@ -413,7 +413,7 @@ namespace JB.NoSqlDatabase.Cosmos {
             Tinterface? interfaceItem = default;
 
             if (rc.Success) {
-                IReturnCode<Tinterface> updateItemsRc = await UpdateItem(pDatabaseId, pContainerId, pItem, pItemId, pPartionKeyValue);
+                IReturnCode<Tmodel> updateItemsRc = await UpdateItem<Tmodel>(pDatabaseId, pContainerId, (Tmodel)pItem!, pItemId, pPartionKeyValue);
 
                 if (updateItemsRc.Success) {
                     interfaceItem = updateItemsRc.Data;
