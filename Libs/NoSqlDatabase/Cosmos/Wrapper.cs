@@ -120,8 +120,8 @@ namespace JB.NoSqlDatabase.Cosmos {
             return rc;
         }
 
-        public async Task<IReturnCode<T>> AddItem<T>(string pDatabaseId, string pContainerId, T item) {
-            IReturnCode<T> rc = new ReturnCode<T>();
+        public async Task<IReturnCode<Tmodel>> AddItem<Tmodel>(string pDatabaseId, string pContainerId, Tmodel item) {
+            IReturnCode<Tmodel> rc = new ReturnCode<Tmodel>();
             Container? container = null;
 
             try {
@@ -138,7 +138,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     if (container != null) {
-                        ItemResponse<T>? response = await container.CreateItemAsync(item);
+                        ItemResponse<Tmodel>? response = await container.CreateItemAsync(item);
 
                         if (response.StatusCode == HttpStatusCode.Created) {
                             item = response.Resource;
@@ -245,10 +245,10 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<IList<T>>> GetItems<T>(string pDatabaseId, string pContainerId, string pQuery) {
-            IReturnCode<IList<T>> rc = new ReturnCode<IList<T>>();
+        public async Task<IReturnCode<IList<Tmodel>>> GetItems<Tmodel>(string pDatabaseId, string pContainerId, string pQuery) {
+            IReturnCode<IList<Tmodel>> rc = new ReturnCode<IList<Tmodel>>();
             Container? container = null;
-            IList<T> itemsList = new List<T>();
+            IList<Tmodel> itemsList = new List<Tmodel>();
 
             try {
                 if (rc.Success) {
@@ -264,11 +264,11 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     QueryDefinition queryDefinition = new QueryDefinition(pQuery);
-                    using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
+                    using (FeedIterator<Tmodel>? feedIterator = container?.GetItemQueryIterator<Tmodel>(queryDefinition)) {
                         while (feedIterator?.HasMoreResults == true) {
-                            FeedResponse<T> resultSet = await feedIterator.ReadNextAsync();
+                            FeedResponse<Tmodel> resultSet = await feedIterator.ReadNextAsync();
 
-                            foreach (T? f in resultSet) {
+                            foreach (Tmodel? f in resultSet) {
                                 itemsList.Add(f);
                             }
                         }
@@ -308,10 +308,10 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<T>> GetItem<T>(string pDatabaseId, string pContainerId, string pItemId) {
-            IReturnCode<T> rc = new ReturnCode<T>();
+        public async Task<IReturnCode<Tmodel>> GetItem<Tmodel>(string pDatabaseId, string pContainerId, string pItemId) {
+            IReturnCode<Tmodel> rc = new ReturnCode<Tmodel>();
             Container? container = null;
-            IList<T> itemsList = new List<T>();
+            IList<Tmodel> itemsList = new List<Tmodel>();
 
             try {
                 if (rc.Success) {
@@ -327,10 +327,10 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     QueryDefinition queryDefinition = new QueryDefinition($"SELECT * FROM c WHERE c.id='{pItemId}'");
-                    using (FeedIterator<T>? feedIterator = container?.GetItemQueryIterator<T>(queryDefinition)) {
+                    using (FeedIterator<Tmodel>? feedIterator = container?.GetItemQueryIterator<Tmodel>(queryDefinition)) {
 
                         if (feedIterator?.HasMoreResults == true) {
-                            FeedResponse<T> resultSet = await feedIterator.ReadNextAsync();
+                            FeedResponse<Tmodel> resultSet = await feedIterator.ReadNextAsync();
                             itemsList.Add(resultSet.First());
                         }
                     }
@@ -367,10 +367,10 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<T>> UpdateItem<T>(string pDatabaseId, string pContainerId, T pItem, string pItemId, string pPartionKeyValue) {
-            IReturnCode<T> rc = new ReturnCode<T>();
+        public async Task<IReturnCode<Tmodel>> UpdateItem<Tmodel>(string pDatabaseId, string pContainerId, Tmodel pItem, string pItemId, string pPartionKeyValue) {
+            IReturnCode<Tmodel> rc = new ReturnCode<Tmodel>();
             Container? container = null;
-            T? item = default;
+            Tmodel? item = default;
 
             try {
                 if (rc.Success) {
@@ -386,7 +386,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     if (null != container) {
-                        ItemResponse<T> response = await container.ReplaceItemAsync<T>(pItem, pItemId, new PartitionKey(pPartionKeyValue), new ItemRequestOptions(), new CancellationToken());
+                        ItemResponse<Tmodel> response = await container.ReplaceItemAsync<Tmodel>(pItem, pItemId, new PartitionKey(pPartionKeyValue), new ItemRequestOptions(), new CancellationToken());
 
                         if (HttpStatusCode.OK == response.StatusCode) {
                             item = response.Resource;
@@ -429,7 +429,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<bool>> DeleteItem<T>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
+        public async Task<IReturnCode<bool>> DeleteItem<Tmodel>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
             Container? container = null;
 
@@ -447,7 +447,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
                 if (rc.Success) {
                     if (container != null) {
-                        ItemResponse<T> resposne = await container.DeleteItemAsync<T>(pItemId, new PartitionKey(pPartitionKeyValue));
+                        ItemResponse<Tmodel> resposne = await container.DeleteItemAsync<Tmodel>(pItemId, new PartitionKey(pPartitionKeyValue));
 
                         if (System.Net.HttpStatusCode.OK != resposne.StatusCode && System.Net.HttpStatusCode.NoContent != resposne.StatusCode) {
                             rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.BAD_STATUS_CODE_FROM_DELETE_ITEM, HttpStatusCode.InternalServerError));
