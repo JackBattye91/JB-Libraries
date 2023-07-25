@@ -52,7 +52,8 @@ namespace JB.Common.Networking.JWT {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.SIGNING_TOKEN_FAILED, HttpStatusCode.InternalServerError, ex));
+                rc.ErrorCode = ErrorCodes.SIGNING_TOKEN_FAILED;
+                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -99,12 +100,14 @@ namespace JB.Common.Networking.JWT {
 
                 if (rc.Success) {
                     if (signature.Equals(token.Signature) == false) {
-                        rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.TOKEN_SIGNATURE_DO_NOT_MATCH, HttpStatusCode.InternalServerError));
+                        rc.ErrorCode = ErrorCodes.TOKEN_SIGNATURE_DO_NOT_MATCH;
+                        rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.VALIDATE_TOKEN_FAILED, HttpStatusCode.InternalServerError, ex));
+                rc.ErrorCode = ErrorCodes.VALIDATE_TOKEN_FAILED;
+                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
             }
 
             return rc;
@@ -121,11 +124,13 @@ namespace JB.Common.Networking.JWT {
                 }
 
                 if (string.IsNullOrEmpty(base64String)) {
-                    rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.BAD_STATUS_CODE_RETURNED, HttpStatusCode.InternalServerError));
+                    rc.ErrorCode = ErrorCodes.BAD_STATUS_CODE_RETURNED;
+                    rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError));
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.CONVERT_TO_BASE_64_FAILED, HttpStatusCode.InternalServerError, ex));
+                rc.ErrorCode = ErrorCodes.CONVERT_TO_BASE_64_FAILED;
+                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -147,7 +152,8 @@ namespace JB.Common.Networking.JWT {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new NetworkError(ErrorCodes.SCOPE, ErrorCodes.CONVERT_FROM_BASE_64_FAILED, HttpStatusCode.InternalServerError, ex));
+                rc.ErrorCode = ErrorCodes.CONVERT_FROM_BASE_64_FAILED;
+                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {

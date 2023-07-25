@@ -11,15 +11,16 @@ namespace JB.Common {
         public static void AddError<T>(IReturnCode<T> rc, long pErrorCode) {
             AddError(rc, pErrorCode);
         }
-        public static void AddError<T>(IReturnCode<T> rc, int pScope, int pCode, string? pMessage) {
-            AddError(rc, pScope, pCode, new Exception(pMessage));
+        public static void AddError<T>(IReturnCode<T> rc, int pCode, string? pMessage) {
+            AddError(rc, pCode, new Exception(pMessage));
         }
-        public static void AddError<T>(IReturnCode<T> rc, int pScope, int pCode, Exception? ex) {
-            rc.Errors.Add(new Error(pScope, pCode, ex));
+        public static void AddError<T>(IReturnCode<T> rc, int pCode, Exception? ex) {
+            rc.Errors.Add(new Error(pCode, ex));
         }
 
         public static void CopyErrors<T, U>(IReturnCode<T>? pSource, IReturnCode<U>? pDestination) {
             if (pSource != null && pDestination != null) {
+                pDestination.ErrorCode = pSource.ErrorCode;
                 foreach (IError srcCodes in pSource.Errors) {
                     pDestination?.Errors.Add(srcCodes);
                 }
@@ -46,7 +47,7 @@ namespace JB.Common {
 
         public static void LogErrors<T>(ILogger pLog, IReturnCode<T> rc) {
             foreach(IError error in rc.Errors) {
-                pLog.LogError($"{error.Scope} - {error.ErrorCode} - {error.TimeStamp} - {error.Exception?.Message ?? string.Empty}");
+                pLog.LogError($"{error.ErrorCode} - {error.TimeStamp} - {error.Exception?.Message ?? string.Empty}");
             }
         }
     }
