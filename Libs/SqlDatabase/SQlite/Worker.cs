@@ -25,7 +25,8 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.PARSE_DATA_FAILED, ex));
+                rc.ErrorCode = ErrorCodes.PARSE_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
             }
 
             return rc;
