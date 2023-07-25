@@ -37,7 +37,8 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.Errors.Add(new SqlDatabaseError(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
                     }
                 }
 
@@ -74,7 +75,8 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.CREATE_TABLE_FAILED, ex));
+                rc.ErrorCode = ErrorCodes.CREATE_TABLE_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
             }
 
             return rc;
@@ -95,7 +97,8 @@ namespace JB.SqlDatabase.SQlite {
                 dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
             }
             catch(Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.RUN_QUERY_FAILED, ex));
+                rc.ErrorCode = ErrorCodes.RUN_QUERY_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
             }
 
             if (rc.Success) {
@@ -124,7 +127,8 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch(Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.RUN_STORE_PROCEDURE_FAILED, ex));
+                rc.ErrorCode = ErrorCodes.RUN_STORE_PROCEDURE_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
             }
 
             if (rc.Success) {
@@ -170,7 +174,9 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.GET_DATA_FAILED, ex));
+                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+
             }
 
             return rc;
