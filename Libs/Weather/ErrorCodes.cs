@@ -8,10 +8,10 @@ namespace JB.Weather
 {
     internal class ErrorCodes
     {
-        public const int SCOPE = 3;
+        private const int SCOPE = 3;
 
-        public const int GET_TODAYS_FORCAST_FAILED = 1;
-        public const int GET_3DAY_FORCAST_FAILED = 2;
-        public const int EXTRACT_FORCAST_FAILED = 3;
+        public const int GET_TODAYS_FORCAST_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 1;
+        public const int GET_3DAY_FORCAST_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 2;
+        public const int EXTRACT_FORCAST_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 3;
     }
 }
