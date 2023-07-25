@@ -47,7 +47,8 @@ namespace JB.Weather.BBC_Weather {
                 forcast.PressureMb = 0;
             }
             catch (Exception ex) {
-                rc.Errors.Add(new WeatherError(ErrorCodes.EXTRACT_FORCAST_FAILED, System.Net.HttpStatusCode.InternalServerError, ex));
+                rc.ErrorCode = ErrorCodes.EXTRACT_FORCAST_FAILED;
+                rc.Errors.Add(new NetworkError(rc.ErrorCode, System.Net.HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
