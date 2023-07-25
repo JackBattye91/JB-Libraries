@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace JB.Common {
     public sealed class ErrorCodes {
         public const int SCOPE = 0;
+        public const int SCOPE_OFFSET = 10000;
 
         public const int BAD_STATUS_CODE_RETURNED = 1;
         public const int TOKEN_SIGNATURE_DO_NOT_MATCH = 2;
