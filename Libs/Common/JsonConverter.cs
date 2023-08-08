@@ -1,20 +1,20 @@
 ﻿using Newtonsoft.Json;
 
 namespace JB.Common {
-    public class JsonListConverter<Tinterface, Tclass> : JsonConverter where Tclass : Tinterface {
+    public class JsonListConverter<TInterface, TClass> : JsonConverter where TClass : TInterface {
         public override bool CanConvert(Type objectType) {
             return true;
         }
 
         public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer) {
-            IList<Tclass>? classList = serializer.Deserialize<IList<Tclass>>(reader);
-            IList<Tinterface> interfaceList = new List<Tinterface>();
+            IList<TClass>? classList = serializer.Deserialize<IList<TClass>>(reader);
+            IList<TInterface> interfaceList = new List<TInterface>();
 
             if (classList == null) {
                 return null;
             }
 
-            foreach(Tclass classObj in classList) {
+            foreach(TClass classObj in classList) {
                 interfaceList.Add(classObj);
             }
 
@@ -33,7 +33,7 @@ namespace JB.Common {
 
         public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer) {
             int value = serializer.Deserialize<int>(reader);
-            T? obj = (T?)typeof(T).GetEnumValues().GetValue(value);
+            T? obj = (T?)objectType.GetEnumValues().GetValue(value);
             return obj;
         }
 
