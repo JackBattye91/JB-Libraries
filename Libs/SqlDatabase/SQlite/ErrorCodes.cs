@@ -14,5 +14,10 @@ namespace JB.SqlDatabase.SQlite {
         public const int RUN_STORE_PROCEDURE_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 4;
         public const int GET_DATA_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 5;
         public const int UNABLE_TO_OPEN_DATA_BASE = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 6;
+        public const int CREATE_DATABASE_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 7;
+        public const int POPULATE_OBJECT_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 8;
+        public const int INSERT_DATA_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 9;
+        public const int GET_OBJECT_VALUES_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 10;
+        public const int DELETE_TABLE_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 11;
     }
 }
