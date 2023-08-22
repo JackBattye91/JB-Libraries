@@ -12,44 +12,36 @@ namespace JB.SqlDatabase.SQlite.Models
 {
     internal class DataReader : Interfaces.IDataReader
     {
-        protected SqliteDataReader sqlDataReader { get; set; }
+        protected SqliteDataReader SqlDataReader { get; set; }
 
         public DataReader(SqliteDataReader pReader)
         {
-            sqlDataReader = pReader;
+            SqlDataReader = pReader;
         }
 
         public bool HasRows() {
-            return sqlDataReader.HasRows;
+            return SqlDataReader.HasRows;
         }
 
         public bool NextRow()
         {
-            return sqlDataReader.Read();
+            return SqlDataReader.Read();
         }
         public object Get(string pName)
         {
-            int ordinal = sqlDataReader.GetOrdinal(pName);
-            return sqlDataReader.GetValue(ordinal);
+            int ordinal = SqlDataReader.GetOrdinal(pName);
+            return SqlDataReader.GetValue(ordinal);
         }
         public object Get(int pOrdinal) {
-            return sqlDataReader.GetValue(pOrdinal);
+            return SqlDataReader.GetValue(pOrdinal);
         }
 
         public bool HasValue(string pName)
         {
-            DataTable dataTabe = sqlDataReader.GetSchemaTable();
-
-            foreach(DataColumn column in dataTabe.Columns) {
-                if (column.ColumnName.ToLower().Equals(pName.ToLower())) {
-                    return true;
-                }
-            }
-
-            return false;
+            return Get(pName) != null;
         }
         public int GetOrdinal(string pName) {
-            return sqlDataReader.GetOrdinal(pName);
+            return SqlDataReader.GetOrdinal(pName);
         }
     }
 }
