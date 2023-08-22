@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace JB.Common {
     public interface IError {
-        int Scope { get; }
         int ErrorCode { get; set; }
         Exception? Exception { get; set; }
         DateTime TimeStamp { get; }
@@ -18,43 +17,36 @@ namespace JB.Common {
         HttpStatusCode StatusCode { get; set; }
     }
     public class Error : IError {
-        public int Scope { get; protected set; }
         public int ErrorCode { get; set; }
         public Exception? Exception { get; set; }
         public DateTime TimeStamp { get; protected set; }
 
         public Error() {
-            Scope = 0;
             ErrorCode = 0;
             Exception = null;
             TimeStamp = DateTime.UtcNow;
         }
 
-        public Error(int scope, int code, Exception? exception = null) {
-            Scope = scope;
+        public Error(int code, Exception? exception = null) {
             ErrorCode = code;
             Exception = exception;
             TimeStamp = DateTime.Now;
         }
     }
-
     public class NetworkError : INetworkError {
-        public int Scope { get; protected set; }
         public int ErrorCode { get; set; }
         public Exception? Exception { get; set; }
         public DateTime TimeStamp { get; protected set; }
         public HttpStatusCode StatusCode { get; set; }
 
         public NetworkError() {
-            Scope = 0;
             ErrorCode = 0;
             Exception = null;
             TimeStamp = DateTime.UtcNow;
             StatusCode = HttpStatusCode.OK;
         }
 
-        public NetworkError(int scope, int pErrorCode, HttpStatusCode pStatusCode, Exception? pException = null) {
-            Scope = scope;
+        public NetworkError(int pErrorCode, HttpStatusCode pStatusCode, Exception? pException = null) {
             ErrorCode = pErrorCode;
             Exception = pException;
             TimeStamp = DateTime.Now;
@@ -66,37 +58,26 @@ namespace JB.Common {
         bool Success { get; }
         bool Failed { get; }
         T? Data { get; set; }
+        int ErrorCode { get; set; }
         IList<IError> Errors { get; set; }
     }
     public class ReturnCode<T> : IReturnCode<T> {
         public T? Data { get; set; }
-        public bool Success { get { return (Errors.Count == 0); } }
+        public bool Success { get { return (ErrorCode == 0); } }
         public bool Failed { get { return !Success; } }
+        public int ErrorCode { get; set; }
         public IList<IError> Errors { get; set; }
 
         public ReturnCode() {
             Data = default;
+            ErrorCode = 0;
             Errors = new List<IError>();
         }
 
-        public ReturnCode(long code) {
+        public ReturnCode(int pErrorCode) {
             Data = default;
+            ErrorCode = pErrorCode;
             Errors = new List<IError>();
-        }
-        public ReturnCode(IError error) {
-            Data = default;
-            Errors = new List<IError>(new[] { error });
-        }
-
-        public ReturnCode(int scope, int code, Exception ex) {
-            Data = default;
-            Errors = new List<IError>(new[] { new Error(scope, code, ex) });
-        }
-
-        public ReturnCode(IError error, Exception ex) {
-            Data = default;
-            error.Exception = ex;
-            Errors = new List<IError>(new[] { error });
         }
     }
 }
