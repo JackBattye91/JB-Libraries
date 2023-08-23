@@ -334,7 +334,13 @@ namespace JB.SqlDatabase.SQlite {
                     for(int p = 0; p < dataMap.Count; p++) {
                         KeyValuePair<string, object?> prop = dataMap.ElementAt(p);
 
-                        queryBuilder.Append($" {prop.Key} = {prop.Value}");
+                        if (prop.Value?.GetType() == typeof(string)) {
+                            queryBuilder.Append($" {prop.Key} = '{prop.Value}'");
+                        }
+                        else {
+                            queryBuilder.Append($" {prop.Key} = {prop.Value}");
+                        }
+                        
 
                         if (p + 1 < dataMap.Count) {
                             queryBuilder.Append(',');
