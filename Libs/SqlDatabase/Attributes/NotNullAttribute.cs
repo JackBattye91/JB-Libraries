@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.SqlDatabase.Attributes {
-    internal class NotNullAttribute : Attribute {
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class NotNullAttribute : Attribute {
 
     }
 }
