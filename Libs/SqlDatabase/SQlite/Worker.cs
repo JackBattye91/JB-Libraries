@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using JB.Common;
+using JB.SqlDatabase.Attributes;
 using JB.SqlDatabase.Interfaces;
 
 namespace JB.SqlDatabase.SQlite {
@@ -84,7 +85,7 @@ namespace JB.SqlDatabase.SQlite {
             IList<object?> objList = new List<object?>();
 
             try {
-                var properties = pObjectType.GetProperties();
+                PropertyInfo[] properties = pObjectType.GetProperties();
 
                 while (pDataReader.NextRow()) {
                     object? obj = default;
@@ -106,6 +107,14 @@ namespace JB.SqlDatabase.SQlite {
                             }
                             else if (prop.PropertyType == typeof(bool)) {
                                 prop.SetValue(obj, (long)value != 0);
+                            }
+                            else if (prop.PropertyType.IsClass) {
+                                string itemId = (string)value;
+                                CustomAttributeData? tableAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+
+                                if (tableAttribute != null) {
+                                     
+                                }
                             }
                         }
                     }
