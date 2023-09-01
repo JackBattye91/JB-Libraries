@@ -31,7 +31,6 @@ namespace JB.SqlDatabase.SQlite {
         public async Task<IReturnCode<bool>> CreateTable<T>(string pDatabaseName, string pTableName) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
             SqliteConnection connection = CreateConnection(pDatabaseName);
-            StringBuilder queryBuilder = new StringBuilder();
 
             try {
                 if (rc.Success) {
@@ -44,44 +43,11 @@ namespace JB.SqlDatabase.SQlite {
                 }
 
                 if (rc.Success) {
-                    queryBuilder.Append($"CREATE TABLE IF NOT EXISTS {pTableName} (");
-                    var properties = typeof(T).GetProperties();
+                    IReturnCode<bool> createTableRc = await CreateTable(connection, pTableName, typeof(T));
 
-                    for (int p = 0; p < properties.Length; p++) {
-                        PropertyInfo prop = properties[p];
-
-                        CustomAttributeData? primaryAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(PrimaryKeyAttribute)).FirstOrDefault();
-                        CustomAttributeData? notNullAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(NotNullAttribute)).FirstOrDefault();
-                        CustomAttributeData? autoIncrementAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(AutoIncrementAttribute)).FirstOrDefault();
-
-                        queryBuilder.Append($"{prop.Name} {Worker.ConvertToDatabaseType(prop.PropertyType)}");
-
-                        if (notNullAttribute != null) {
-                            queryBuilder.Append(" NOT NULL");
-                        }
-                        if (primaryAttribute != null) {
-                            queryBuilder.Append(" PRIMARY KEY");
-                        }
-                        if (autoIncrementAttribute != null) {
-                            queryBuilder.Append(" AUTOINCREMENT");
-                        }
-                        if ((prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>)) == false) {
-                            queryBuilder.Append(" NOT NULL");
-                        }
-
-                        if (p + 1 < properties.Length) {
-                            queryBuilder.Append(", ");
-                        }
+                    if (createTableRc.Failed) {
+                        ErrorWorker.CopyErrors(createTableRc, rc);
                     }
-
-                    queryBuilder.Append($");");
-                }
-
-                if (rc.Success) { 
-                    var command = connection.CreateCommand();
-                    command.CommandType = CommandType.Text;
-                    command.CommandText = queryBuilder.ToString();
-                    await command.ExecuteNonQueryAsync();
                 }
             }
             catch (Exception ex) {
@@ -162,9 +128,7 @@ namespace JB.SqlDatabase.SQlite {
 
         public async Task<IReturnCode<IList<T>>> Get<T>(string pDatabaseName, string pTableName, string? pQueryParameters = null) {
             IReturnCode<IList<T>> rc = new ReturnCode<IList<T>>();
-            Interfaces.IDataReader? dataReader = null;
             SqliteConnection connection = CreateConnection(pDatabaseName);
-            StringBuilder queryBuilder = new StringBuilder();
             IList<T> itemsList = new List<T>();
 
             try {
@@ -178,32 +142,17 @@ namespace JB.SqlDatabase.SQlite {
                 }
 
                 if (rc.Success) {
-                    queryBuilder.Append($"SELECT * FROM {pTableName}");
+                    IReturnCode<IList<object?>> getObjectsRc = await Get(connection, pTableName, typeof(T), pQueryParameters);
 
-                    if (pQueryParameters?.Length > 0) {
-                        queryBuilder.Append($" WHERE {pQueryParameters}");
+                    if (getObjectsRc.Success) {
+                        foreach(object? obj in getObjectsRc.Data!) {
+                            if (obj is T) {
+                                itemsList.Add((T)obj);
+                            }
+                        }
                     }
-
-                    queryBuilder.Append(";");
-                }
-
-                if (rc.Success) {
-                    SqliteCommand command = connection.CreateCommand();
-                    command.CommandType = CommandType.Text;
-                    command.CommandText = queryBuilder.ToString();
-
-                    dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
-                }
-
-                if (rc.Success) {
-                    IReturnCode<IList<T?>> populateObjRc = Worker.PopulateObjects<T>(dataReader!);
-
-                    if (populateObjRc.Success) {
-                        itemsList = populateObjRc.Data!;
-                    }
-
-                    if (populateObjRc.Failed) {
-                        ErrorWorker.CopyErrors(populateObjRc, rc);
+                    if (!getObjectsRc.Failed) {
+                        ErrorWorker.CopyErrors(getObjectsRc, rc);
                     }
                 }
             }
@@ -267,6 +216,9 @@ namespace JB.SqlDatabase.SQlite {
 
                         if (value?.GetType() ==  typeof(string)) {
                             queryBuilder.Append($"'{value}'");
+                        }
+                        else if (value?.GetType().IsEnum == true) {
+                            queryBuilder.Append($"{(int)value}");
                         }
                         else {
                             queryBuilder.Append($"{value}");
@@ -402,6 +354,146 @@ namespace JB.SqlDatabase.SQlite {
 
         protected static SqliteConnection CreateConnection(string pDatabaseName) {
             return new SqliteConnection($"Data Source={pDatabaseName}");
+        }
+        protected static async Task<IReturnCode<bool>> CreateTable(SqliteConnection pConnection, string pTableName, Type pObjectType) {
+            IReturnCode<bool> rc = new ReturnCode<bool>();
+            StringBuilder queryBuilder = new StringBuilder();
+
+            try {
+                if (rc.Success) {
+                    if (pConnection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    queryBuilder.Append($"CREATE TABLE IF NOT EXISTS {pTableName} (");
+                    var properties = pObjectType.GetProperties();
+
+                    for (int p = 0; p < properties.Length; p++) {
+                        PropertyInfo prop = properties[p];
+
+                        CustomAttributeData? primaryAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(PrimaryKeyAttribute)).FirstOrDefault();
+                        CustomAttributeData? notNullAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(NotNullAttribute)).FirstOrDefault();
+                        CustomAttributeData? autoIncrementAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(AutoIncrementAttribute)).FirstOrDefault();
+                        CustomAttributeData? tableAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+
+                        string? dbTypeName = Worker.ConvertToDatabaseType(prop.PropertyType);
+
+                        if (dbTypeName != null) {
+                            if (p > 0) {
+                                queryBuilder.Append(", ");
+                            }
+
+                            queryBuilder.Append($"{prop.Name} {dbTypeName}");
+
+                            if (notNullAttribute != null) {
+                                queryBuilder.Append(" NOT NULL");
+                            }
+                            if (primaryAttribute != null) {
+                                queryBuilder.Append(" PRIMARY KEY");
+                            }
+                            if (autoIncrementAttribute != null) {
+                                queryBuilder.Append(" AUTOINCREMENT");
+                            }
+                        }
+                        else if (tableAttribute != null) {
+                            IReturnCode<bool> createSubTableRc = await CreateTable(pConnection, prop.Name, prop.PropertyType);
+
+                            if (createSubTableRc.Success) {
+                                string? tableName = (string?)tableAttribute.ConstructorArguments[0].Value;
+                                string? tableColumn = (string?)tableAttribute.ConstructorArguments[1].Value;
+
+                                if (p > 0) {
+                                    queryBuilder.Append(", ");
+                                }
+
+                                queryBuilder.Append($"{prop.Name} TEXT");
+
+                                if (notNullAttribute != null) {
+                                    queryBuilder.Append(" NOT NULL");
+                                }
+
+                                queryBuilder.Append($" REFERENCES {tableName}({tableColumn})");
+                            }
+                            if (createSubTableRc.Failed) {
+                                ErrorWorker.CopyErrors(createSubTableRc, rc);
+                            }
+                        }
+                    }
+
+                    queryBuilder.Append($");");
+                }
+
+                if (rc.Success) {
+                    var command = pConnection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = queryBuilder.ToString();
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.CREATE_TABLE_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            return rc;
+        }
+        protected static async Task<IReturnCode<IList<object?>>> Get(SqliteConnection pConnection, string pTableName, Type pObjectType, string? pQueryParameters = null) {
+            IReturnCode<IList<object?>> rc = new ReturnCode<IList<object?>>();
+            Interfaces.IDataReader? dataReader = null;
+            StringBuilder queryBuilder = new StringBuilder();
+            IList<object?> itemsList = new List<object?>();
+
+            try {
+                if (rc.Success) {
+                    if (pConnection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    queryBuilder.Append($"SELECT * FROM {pTableName}");
+
+                    if (pQueryParameters?.Length > 0) {
+                        queryBuilder.Append($" WHERE {pQueryParameters}");
+                    }
+
+                    queryBuilder.Append(";");
+                }
+
+                if (rc.Success) {
+                    SqliteCommand command = pConnection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = queryBuilder.ToString();
+
+                    dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
+                }
+
+                if (rc.Success) {
+                    IReturnCode<IList<object?>> populateObjRc = Worker.PopulateObjects(dataReader!, pObjectType);
+
+                    if (populateObjRc.Success) {
+                        itemsList = populateObjRc.Data!;
+                    }
+
+                    if (populateObjRc.Failed) {
+                        ErrorWorker.CopyErrors(populateObjRc, rc);
+                    }
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = itemsList;
+            }
+
+            return rc;
         }
     }
 }
