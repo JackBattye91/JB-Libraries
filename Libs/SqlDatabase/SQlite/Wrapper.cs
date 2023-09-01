@@ -220,6 +220,10 @@ namespace JB.SqlDatabase.SQlite {
                         else if (value?.GetType().IsEnum == true) {
                             queryBuilder.Append($"{(int)value}");
                         }
+                        else if (value?.GetType().IsClass == true) {
+                            CustomAttributeData? tableAttribute = value.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+
+                        }
                         else {
                             queryBuilder.Append($"{value}");
                         }
@@ -284,18 +288,30 @@ namespace JB.SqlDatabase.SQlite {
                     queryBuilder.Append($"UPDATE {pTableName} SET");
 
                     for(int p = 0; p < dataMap.Count; p++) {
+                        if (p != 0) {
+                            queryBuilder.Append(", ");
+                        }
+
                         KeyValuePair<string, object?> prop = dataMap.ElementAt(p);
 
                         if (prop.Value?.GetType() == typeof(string)) {
-                            queryBuilder.Append($" {prop.Key} = '{prop.Value}'");
+                            queryBuilder.Append($"{prop.Key} = '{prop.Value}'");
+                        }
+                        else if (prop.Value?.GetType().IsEnum == true) {
+                            queryBuilder.Append($"{prop.Key} = '{(int)prop.Value}'");
+                        }
+                        else if (prop.Value?.GetType().IsClass == true) {
+                            CustomAttributeData? tableAttribute = prop.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                            PropertyInfo[] subItemProps = prop.Value.GetType().GetProperties();
+
+                            foreach(var subProp in subItemProps) {
+                                if (subProp.Name == (string?)tableAttribute?.ConstructorArguments[1].Value) {
+                                    subProp.GetValue(prop.Value, null);
+                                }
+                            }
                         }
                         else {
-                            queryBuilder.Append($" {prop.Key} = {prop.Value}");
-                        }
-                        
-
-                        if (p + 1 < dataMap.Count) {
-                            queryBuilder.Append(',');
+                            queryBuilder.Append($"{prop.Key} = {prop.Value}");
                         }
                     }
 
