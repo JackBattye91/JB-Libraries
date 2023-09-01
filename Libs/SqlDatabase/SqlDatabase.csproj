@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<AssemblyName>JB_Library_$(MSBuildProjectName)</AssemblyName>
-	<Version>1.0.7</Version>
+	<Version>1.0.8</Version>
 	<RootNamespace>JB.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
