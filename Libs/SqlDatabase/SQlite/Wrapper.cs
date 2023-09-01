@@ -378,6 +378,11 @@ namespace JB.SqlDatabase.SQlite {
                         CustomAttributeData? notNullAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(NotNullAttribute)).FirstOrDefault();
                         CustomAttributeData? autoIncrementAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(AutoIncrementAttribute)).FirstOrDefault();
                         CustomAttributeData? tableAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                        CustomAttributeData? ignoreAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault();
+
+                        if (ignoreAttribute != null) {
+                            continue;
+                        }
 
                         string? dbTypeName = Worker.ConvertToDatabaseType(prop.PropertyType);
 
