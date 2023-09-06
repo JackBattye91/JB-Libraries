@@ -11,166 +11,507 @@ using JB.SqlDatabase.Attributes;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Wrapper : IWrapper {
-        public async Task<IReturnCode<bool>> CreateDatabase(string pDatabaseName) {
-            SqliteConnection connection = new SqliteConnection();
-            await connection.OpenAsync();
+        public Task<IReturnCode<bool>> CreateDatabase(string pDatabaseName) {
+            IReturnCode<bool> rc = new ReturnCode<bool>();
 
-            var command = connection.CreateCommand();
-            command.CommandType = CommandType.Text;
-            command.CommandText = $"CREATE DATABASE {pDatabaseName};";
-
-            SqliteDataReader reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync()) {
-                string id = reader["id"] as string ?? string.Empty;
+            try {
+                if (rc.Success) {
+                    using (FileStream dbFile = File.Create(pDatabaseName)) {
+                        dbFile.Close();
+                    }
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.CREATE_DATABASE_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
             }
 
-            throw new NotImplementedException();
+            return Task.FromResult(rc);
         }
-
         public async Task<IReturnCode<bool>> CreateTable<T>(string pDatabaseName, string pTableName) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
-            SqliteConnection connection = new SqliteConnection();
-            StringBuilder queryBuilder = new StringBuilder();
+            SqliteConnection connection = CreateConnection(pDatabaseName);
 
             try {
                 if (rc.Success) {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.Errors.Add(new SqlDatabaseError(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
                     }
                 }
 
                 if (rc.Success) {
-                    queryBuilder.Append($"CREATE TABLE [IF NOT EXISTS] {pDatabaseName} (");
-                    var properties = typeof(T).GetProperties();
+                    IReturnCode<bool> createTableRc = await CreateTable(connection, pTableName, typeof(T));
 
-                    foreach (var prop in properties) {
+                    if (createTableRc.Failed) {
+                        ErrorWorker.CopyErrors(createTableRc, rc);
+                    }
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.CREATE_TABLE_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<bool>> DeleteTable(string pDatabaseName, string pTableName) {
+            IReturnCode<bool> rc = new ReturnCode<bool>();
+            SqliteConnection connection = CreateConnection(pDatabaseName);
+
+            try {
+                if (rc.Success) {
+                    await connection.OpenAsync();
+
+                    if (connection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    var command = connection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = $"DROP TABLE {pTableName};";
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.DELETE_TABLE_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            return rc;
+        }
+
+
+        public async Task<IReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
+            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
+            Interfaces.IDataReader? dataReader = null;
+            SqliteConnection connection = CreateConnection(pDatabaseName); ;
+
+            try {
+                if (rc.Success) {
+                    await connection.OpenAsync();
+
+                    if (connection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    SqliteCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = pQuery;
+
+                    dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
+                }
+            }
+            catch(Exception ex) {
+                rc.ErrorCode = ErrorCodes.RUN_QUERY_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = dataReader;
+            }
+            
+            return rc;
+        }
+        public Task<IReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+            throw new NotImplementedException();
+        }
+
+
+        public async Task<IReturnCode<IList<T>>> Get<T>(string pDatabaseName, string pTableName, string? pQueryParameters = null) {
+            IReturnCode<IList<T>> rc = new ReturnCode<IList<T>>();
+            SqliteConnection connection = CreateConnection(pDatabaseName);
+            IList<T> itemsList = new List<T>();
+
+            try {
+                if (rc.Success) {
+                    await connection.OpenAsync();
+
+                    if (connection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    IReturnCode<IList<object?>> getObjectsRc = await Get(connection, pTableName, typeof(T), pQueryParameters);
+
+                    if (getObjectsRc.Success) {
+                        foreach(object? obj in getObjectsRc.Data!) {
+                            if (obj is T) {
+                                itemsList.Add((T)obj);
+                            }
+                        }
+                    }
+                    if (!getObjectsRc.Failed) {
+                        ErrorWorker.CopyErrors(getObjectsRc, rc);
+                    }
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = itemsList;
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<T>> Insert<T>(string pDatabaseName, string pTableName, T pItem) {
+            IReturnCode<T> rc = new ReturnCode<T>();
+            Interfaces.IDataReader? dataReader = null;
+            SqliteConnection connection = CreateConnection(pDatabaseName);
+            StringBuilder queryBuilder = new StringBuilder();
+            IDictionary<string, object?> dataMap = new Dictionary<string, object?>();
+
+            try {
+                if (rc.Success) {
+                    await connection.OpenAsync();
+
+                    if (connection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    IReturnCode<IDictionary<string, object?>> getValuesRc = Worker.GetObjectValues(pItem);
+
+                    if (getValuesRc.Success) {
+                        dataMap = getValuesRc.Data!;
+                    }
+
+                    if (getValuesRc.Failed) {
+                        ErrorWorker.CopyErrors(getValuesRc, rc);
+                    }
+                }
+
+                if (rc.Success) {
+                    queryBuilder.Append($"INSERT INTO {pTableName}(");
+
+                    IList<string> keyList = dataMap.Keys.ToList();
+                    for (int k = 0; k < keyList.Count; k++) {
+                        string key = keyList[k];
+                        queryBuilder.Append($"{key}");
+
+                        if (k + 1 < keyList.Count) {
+                            queryBuilder.Append(',');
+                        }
+                    }
+                    queryBuilder.Append(") VALUES (");
+
+                    IList<object?> valueList = dataMap.Values.ToList();
+                    for (int v = 0; v < valueList.Count; v++) {
+                        object? value = valueList[v];
+
+                        if (value?.GetType() ==  typeof(string)) {
+                            queryBuilder.Append($"'{value}'");
+                        }
+                        else if (value?.GetType().IsEnum == true) {
+                            queryBuilder.Append($"{(int)value}");
+                        }
+                        else if (value?.GetType().IsClass == true) {
+                            CustomAttributeData? tableAttribute = value.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+
+                        }
+                        else {
+                            queryBuilder.Append($"{value}");
+                        }
+                        
+                        if (v + 1 < valueList.Count) {
+                            queryBuilder.Append(',');
+                        }
+                    }
+
+                    queryBuilder.Append(");");
+                }
+
+                if (rc.Success) {
+                    SqliteCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = queryBuilder.ToString();
+
+                    dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = pItem;
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<T>> Update<T>(string pDatabaseName, string pTableName, T pItem, string pQueryParameters) {
+            IReturnCode<T> rc = new ReturnCode<T>();
+            Interfaces.IDataReader? dataReader = null;
+            SqliteConnection connection = CreateConnection(pDatabaseName);
+            StringBuilder queryBuilder = new StringBuilder();
+            IDictionary<string, object?> dataMap = new Dictionary<string, object?>();
+
+            try {
+                if (rc.Success) {
+                    await connection.OpenAsync();
+
+                    if (connection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    IReturnCode<IDictionary<string, object?>> getValuesRc = Worker.GetObjectValues(pItem);
+
+                    if (getValuesRc.Success) {
+                        dataMap = getValuesRc.Data!;
+                    }
+
+                    if (getValuesRc.Failed) {
+                        ErrorWorker.CopyErrors(getValuesRc, rc);
+                    }
+                }
+
+                if (rc.Success) {
+                    queryBuilder.Append($"UPDATE {pTableName} SET");
+
+                    for(int p = 0; p < dataMap.Count; p++) {
+                        if (p != 0) {
+                            queryBuilder.Append(", ");
+                        }
+
+                        KeyValuePair<string, object?> prop = dataMap.ElementAt(p);
+
+                        if (prop.Value?.GetType() == typeof(string)) {
+                            queryBuilder.Append($"{prop.Key} = '{prop.Value}'");
+                        }
+                        else if (prop.Value?.GetType().IsEnum == true) {
+                            queryBuilder.Append($"{prop.Key} = '{(int)prop.Value}'");
+                        }
+                        else if (prop.Value?.GetType().IsClass == true) {
+                            CustomAttributeData? tableAttribute = prop.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                            PropertyInfo[] subItemProps = prop.Value.GetType().GetProperties();
+
+                            foreach(var subProp in subItemProps) {
+                                if (subProp.Name == (string?)tableAttribute?.ConstructorArguments[1].Value) {
+                                    subProp.GetValue(prop.Value, null);
+                                }
+                            }
+                        }
+                        else {
+                            queryBuilder.Append($"{prop.Key} = {prop.Value}");
+                        }
+                    }
+
+                    queryBuilder.Append($" WHERE {pQueryParameters};");
+                }
+
+                if (rc.Success) {
+                    SqliteCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = queryBuilder.ToString();
+
+                    dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = pItem;
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<bool>> Delete(string pDatabaseName, string pTableName, string pQueryParameters) {
+            IReturnCode<bool> rc = new ReturnCode<bool>();
+            SqliteConnection connection = CreateConnection(pDatabaseName);
+
+            try {
+                if (rc.Success) {
+                    await connection.OpenAsync();
+
+                    if (connection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    SqliteCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = $"DELETE FROM {pTableName} WHERE {pQueryParameters}";
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            return rc;
+        }
+
+
+        protected static SqliteConnection CreateConnection(string pDatabaseName) {
+            return new SqliteConnection($"Data Source={pDatabaseName}");
+        }
+        protected static async Task<IReturnCode<bool>> CreateTable(SqliteConnection pConnection, string pTableName, Type pObjectType) {
+            IReturnCode<bool> rc = new ReturnCode<bool>();
+            StringBuilder queryBuilder = new StringBuilder();
+
+            try {
+                if (rc.Success) {
+                    if (pConnection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    queryBuilder.Append($"CREATE TABLE IF NOT EXISTS {pTableName} (");
+                    var properties = pObjectType.GetProperties();
+
+                    for (int p = 0; p < properties.Length; p++) {
+                        PropertyInfo prop = properties[p];
+
                         CustomAttributeData? primaryAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(PrimaryKeyAttribute)).FirstOrDefault();
                         CustomAttributeData? notNullAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(NotNullAttribute)).FirstOrDefault();
+                        CustomAttributeData? autoIncrementAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(AutoIncrementAttribute)).FirstOrDefault();
+                        CustomAttributeData? tableAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                        CustomAttributeData? ignoreAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault();
 
-                        queryBuilder.Append($"{prop.Name} {Worker.ConvertToDatabaseType(prop.PropertyType)}");
-
-                        if (notNullAttribute != null) {
-                            queryBuilder.Append(" NOT NULL");
+                        if (ignoreAttribute != null) {
+                            continue;
                         }
-                        if (primaryAttribute != null) {
-                            queryBuilder.Append(" PRIMARY KEY");
+
+                        string? dbTypeName = Worker.ConvertToDatabaseType(prop.PropertyType);
+
+                        if (dbTypeName != null) {
+                            if (p > 0) {
+                                queryBuilder.Append(", ");
+                            }
+
+                            queryBuilder.Append($"{prop.Name} {dbTypeName}");
+
+                            if (notNullAttribute != null) {
+                                queryBuilder.Append(" NOT NULL");
+                            }
+                            if (primaryAttribute != null) {
+                                queryBuilder.Append(" PRIMARY KEY");
+                            }
+                            if (autoIncrementAttribute != null) {
+                                queryBuilder.Append(" AUTOINCREMENT");
+                            }
+                        }
+                        else if (tableAttribute != null) {
+                            IReturnCode<bool> createSubTableRc = await CreateTable(pConnection, prop.Name, prop.PropertyType);
+
+                            if (createSubTableRc.Success) {
+                                string? tableName = (string?)tableAttribute.ConstructorArguments[0].Value;
+                                string? tableColumn = (string?)tableAttribute.ConstructorArguments[1].Value;
+
+                                if (p > 0) {
+                                    queryBuilder.Append(", ");
+                                }
+
+                                queryBuilder.Append($"{prop.Name} TEXT");
+
+                                if (notNullAttribute != null) {
+                                    queryBuilder.Append(" NOT NULL");
+                                }
+
+                                queryBuilder.Append($" REFERENCES {tableName}({tableColumn})");
+                            }
+                            if (createSubTableRc.Failed) {
+                                ErrorWorker.CopyErrors(createSubTableRc, rc);
+                            }
                         }
                     }
 
                     queryBuilder.Append($");");
                 }
 
-                if (rc.Success) { 
-                    var command = connection.CreateCommand();
+                if (rc.Success) {
+                    var command = pConnection.CreateCommand();
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = queryBuilder.ToString();
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.CREATE_TABLE_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            return rc;
+        }
+        protected static async Task<IReturnCode<IList<object?>>> Get(SqliteConnection pConnection, string pTableName, Type pObjectType, string? pQueryParameters = null) {
+            IReturnCode<IList<object?>> rc = new ReturnCode<IList<object?>>();
+            Interfaces.IDataReader? dataReader = null;
+            StringBuilder queryBuilder = new StringBuilder();
+            IList<object?> itemsList = new List<object?>();
+
+            try {
+                if (rc.Success) {
+                    if (pConnection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    queryBuilder.Append($"SELECT * FROM {pTableName}");
+
+                    if (pQueryParameters?.Length > 0) {
+                        queryBuilder.Append($" WHERE {pQueryParameters}");
+                    }
+
+                    queryBuilder.Append(";");
+                }
+
+                if (rc.Success) {
+                    SqliteCommand command = pConnection.CreateCommand();
                     command.CommandType = CommandType.Text;
                     command.CommandText = queryBuilder.ToString();
 
-                    SqliteDataReader reader = await command.ExecuteReaderAsync();
-                    if (await reader.ReadAsync()) {
-                        string id = reader["id"] as string ?? string.Empty;
-                    }
-                }
-            }
-            catch (Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.CREATE_TABLE_FAILED, ex));
-            }
-
-            return rc;
-        }
-
-        public async Task<IReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
-            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
-            Interfaces.IDataReader? dataReader = null;
-
-            try {
-                SqliteConnection connection = new SqliteConnection();
-                await connection.OpenAsync();
-
-                SqliteCommand command = connection.CreateCommand();
-                command.CommandType = CommandType.Text;
-                command.CommandText = pQuery;
-
-                dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
-            }
-            catch(Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.RUN_QUERY_FAILED, ex));
-            }
-
-            if (rc.Success) {
-                rc.Data = dataReader;
-            }
-            
-            return rc;
-        }
-        
-        public async Task<IReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
-            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
-            Interfaces.IDataReader? dataReader = null;
-
-            try {
-                if (rc.Success) {
-                    SqliteConnection connection = new SqliteConnection();
-                    await connection.OpenAsync();
-
-                    SqliteCommand command = connection.CreateCommand();
-                    command.CommandType = CommandType.StoredProcedure;
-                    foreach (KeyValuePair<string, object> pair in pParameters) {
-                        command.Parameters.AddWithValue(pair.Key, pair.Value);
-                    }
-
                     dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
                 }
-            }
-            catch(Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.RUN_STORE_PROCEDURE_FAILED, ex));
-            }
-
-            if (rc.Success) {
-                rc.Data = dataReader;
-            }
-            
-            return rc;
-        }
-
-        public async Task<IReturnCode<T>> GetData<T>(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) where T : struct {
-            IReturnCode<T> rc = new ReturnCode<T>();
-            Interfaces.IDataReader? dataReader = null;
-            T item = default;
-
-            try {
-                if (rc.Success) {
-                    IReturnCode<Interfaces.IDataReader> dataReaderRc = await RunStoredProcedure(pDatabaseName, pStoreProcedureName, pParameters);
-
-                    if (dataReaderRc.Success) {
-                        dataReader = dataReaderRc.Data;
-
-                        while (dataReader?.NextRow() ?? false) {
-                            IReturnCode<T> parseDataRc = Worker.ParseData<T>(dataReader);
-
-                            if (parseDataRc.Success) {
-                                item = parseDataRc.Data;
-                            }
-                            if (parseDataRc.Failed) {
-                                ErrorWorker.CopyErrors(parseDataRc, rc);
-                            }
-                        }
-                    }
-                    else {
-                        ErrorWorker.CopyErrors(dataReaderRc, rc);
-                    }
-                }
 
                 if (rc.Success) {
-                    PropertyInfo[] propInfo = typeof(T).GetProperties();
-                    foreach (PropertyInfo prop in propInfo) {
-                        prop.SetValue(item, 0);
+                    IReturnCode<IList<object?>> populateObjRc = Worker.PopulateObjects(dataReader!, pObjectType);
+
+                    if (populateObjRc.Success) {
+                        itemsList = populateObjRc.Data!;
+                    }
+
+                    if (populateObjRc.Failed) {
+                        ErrorWorker.CopyErrors(populateObjRc, rc);
                     }
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new SqlDatabaseError(ErrorCodes.GET_DATA_FAILED, ex));
+                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = itemsList;
             }
 
             return rc;

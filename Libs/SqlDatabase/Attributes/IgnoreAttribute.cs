@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace JB.SqlDatabase.Attributes {
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class PrimaryKeyAttribute : Attribute {
+    public sealed class IgnoreAttribute : Attribute {
     }
 }
