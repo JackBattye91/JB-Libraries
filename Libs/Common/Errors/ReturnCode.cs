@@ -54,30 +54,26 @@ namespace JB.Common {
         }
     }
 
-    public interface IReturnCode<T> {
+    public interface IReturnCode {
         bool Success { get; }
         bool Failed { get; }
-        T? Data { get; set; }
         int ErrorCode { get; set; }
         IList<IError> Errors { get; set; }
+    }
+    public interface IReturnCode<T> : IReturnCode {
+        T? Data { get; set; }
+    }
+    public class ReturnCode : IReturnCode {
+        public bool Success { get { return (ErrorCode == 0); } }
+        public bool Failed { get { return !Success; } }
+        public int ErrorCode { get; set; }
+        public IList<IError> Errors { get; set; } = new List<IError>();
     }
     public class ReturnCode<T> : IReturnCode<T> {
         public T? Data { get; set; }
         public bool Success { get { return (ErrorCode == 0); } }
         public bool Failed { get { return !Success; } }
-        public int ErrorCode { get; set; }
-        public IList<IError> Errors { get; set; }
-
-        public ReturnCode() {
-            Data = default;
-            ErrorCode = 0;
-            Errors = new List<IError>();
-        }
-
-        public ReturnCode(int pErrorCode) {
-            Data = default;
-            ErrorCode = pErrorCode;
-            Errors = new List<IError>();
-        }
+        public int ErrorCode { get; set; } = 0;
+        public IList<IError> Errors { get; set; } = new List<IError>();
     }
 }
