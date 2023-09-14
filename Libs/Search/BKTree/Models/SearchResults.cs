@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.Search.BKTree.Models {
-    internal class StringSearchResults : JB.Search.Interfaces.ISearchResults<string> {
+    internal class StringSearchResults : JB.Search.Interfaces.ISearchResults<T> {
         public IList<string> Data { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
