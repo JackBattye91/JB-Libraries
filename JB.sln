@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlDatabase", "Libs\SqlData
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Weather", "Libs\Weather\Weather.csproj", "{5762447B-E030-4557-AF9A-4A1508D65B06}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchLib", "Libs\Search\SearchLib.csproj", "{94C1374E-E878-4E31-9E87-2F3DFC336426}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search", "Libs\Search\Search.csproj", "{94C1374E-E878-4E31-9E87-2F3DFC336426}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

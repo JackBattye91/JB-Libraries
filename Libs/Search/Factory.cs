@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace JB.Search {
     public sealed class Factory {
-        public static IWrapper<T> CreateSearchInstance<T>(ESearchAlgorithm pAlgorithm) {
+        public static IWrapper CreateSearchInstance(ESearchAlgorithm pAlgorithm) {
             return pAlgorithm switch {
-                ESearchAlgorithm.BK_TREE => new BKTree.Wrapper<T>(),
-                _ => new Binary.Wrapper<T>(),
+                ESearchAlgorithm.BK_TREE => new BKTree.Wrapper(),
+                _ => new Binary.Wrapper(),
             };
         }
     }

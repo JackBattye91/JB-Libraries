@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Libs\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Libs\Search\Search.csproj" />
     <ProjectReference Include="..\..\Libs\SqlDatabase\SqlDatabase.csproj" />
   </ItemGroup>
 

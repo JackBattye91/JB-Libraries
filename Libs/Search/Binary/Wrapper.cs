@@ -6,26 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.Search.Binary {
-    internal class Wrapper<T> : JB.Search.IWrapper<T> {
-        IList<T>? dataList = null;
-        public IReturnCode LoadData(IList<T> pData) {
-            IReturnCode rc = new ReturnCode();
-
-            try {
-                if (rc.Success) {
-                    dataList = pData;
-                }
-            }
-            catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.LOAD_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
-            }
-
-            return rc;
-        }
-
-        public IReturnCode<IList<T>> Search(T pSearchItem) {
-
+    internal class Wrapper : JB.Search.IWrapper {
+        public JB.Common.IReturnCode<IList<T>> Search<T>(IList<T> pDataSet, Func<T, bool> searchCondition) {
+            throw new NotImplementedException();
         }
     }
 }

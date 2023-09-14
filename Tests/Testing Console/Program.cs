@@ -5,21 +5,10 @@ using System.IO;
 using System.Net;
 
 namespace JB {
-
-    class testClass {
-        [JB.SqlDatabase.PrimaryKey]
-        public string Name { get; set; }
-
-        public testClass() {
-            Name = "John";
-        }
-    }
-
     class Program {
         static void Main(string[] args) {
-            JB.SqlDatabase.IWrapper sqlWrapper = JB.SqlDatabase.Factory.CreateSqlWrapperInstance();
-
-            sqlWrapper.CreateTable<string>("TestDB", "Table1");
+            JB.Search.IWrapper searchWrapper = JB.Search.Factory.CreateSearchInstance(Search.ESearchAlgorithm.BINARY);
+            searchWrapper.Search(new List<string>(), (x) => { return x.Length > 0; });
         }
     }
 }

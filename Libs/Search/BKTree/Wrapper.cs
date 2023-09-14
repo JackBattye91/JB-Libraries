@@ -9,12 +9,8 @@ using JB.Search.BKTree.Interfaces;
 using JB.Common;
 
 namespace JB.Search.BKTree {
-    internal class Wrapper<T> : IWrapper<T> {
-        public IReturnCode LoadData(IList<T> pData) {
-            throw new NotImplementedException();
-        }
-
-        public IReturnCode<IList<T>> Search(T pSearchItem) {
+    internal class Wrapper : IWrapper {
+        public JB.Common.IReturnCode<IList<T>> Search<T>(IList<T> pDataSet, Func<T> searchCondition) {
             throw new NotImplementedException();
         }
     }
