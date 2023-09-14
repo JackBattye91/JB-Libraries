@@ -30,15 +30,15 @@ namespace JB.Weather.BBC_Weather {
                 if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.MaxTemp)) {
                     var temps = ExtractTemperatures(descriptionDetails[Consts.ItemDescriptionDetail.MaxTemp]);
 
-                    forcast.MaximumTemperatureCelsius = temps["celsius"];
-                    forcast.MaximumTemperatureFahrenheit = temps["fahrenheit"];
+                    forcast.MaximumTemperatureCelsius = temps[Weather.Consts.Temperature.Celsius];
+                    forcast.MaximumTemperatureFahrenheit = temps[Weather.Consts.Temperature.Fahrenheit];
                 }
 
                 if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.MinTemp)) {
                     var temps = ExtractTemperatures(descriptionDetails[Consts.ItemDescriptionDetail.MinTemp]);
 
-                    forcast.MinimumTemperatureCelsius = temps["celsius"];
-                    forcast.MinimumTemperatureFahrenheit = temps["fahrenheit"];
+                    forcast.MinimumTemperatureCelsius = temps[Weather.Consts.Temperature.Celsius];
+                    forcast.MinimumTemperatureFahrenheit = temps[Weather.Consts.Temperature.Fahrenheit];
                 }
 
                 if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.WindSpeed)) {
@@ -121,11 +121,11 @@ namespace JB.Weather.BBC_Weather {
             Group? fahrenheitGroup = tempsMatch.Groups.ContainsKey("fah") ? tempsMatch.Groups["fah"] : null;
 
             if (celciusGroup != null) {
-                temperatures.Add("celsius", float.Parse(celciusGroup.Value));
+                temperatures.Add(Weather.Consts.Temperature.Celsius, float.Parse(celciusGroup.Value));
             }
 
             if (fahrenheitGroup != null) {
-                temperatures.Add("fahrenheit", float.Parse(fahrenheitGroup.Value));
+                temperatures.Add(Weather.Consts.Temperature.Fahrenheit, float.Parse(fahrenheitGroup.Value));
             }
 
             return temperatures;
