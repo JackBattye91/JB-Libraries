@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 
-namespace JB.Common {
-    public class JsonListConverter<TInterface, TClass> : JsonConverter where TClass : TInterface {
+namespace JB.Common.JsonConverters {
+    public class ListConverter<TInterface, TClass> : JsonConverter where TClass : TInterface {
         public override bool CanConvert(Type objectType) {
             return true;
         }
@@ -25,7 +25,6 @@ namespace JB.Common {
             serializer.Serialize(writer, value);
         }
     }
-
     public class EnumIntConverter<T> : JsonConverter {
         public override bool CanConvert(Type objectType) {
             return objectType.IsEnum;
