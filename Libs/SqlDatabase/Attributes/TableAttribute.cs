@@ -9,10 +9,5 @@ namespace JB.SqlDatabase.Attributes {
     public class TableAttribute : Attribute {
         public string TableName { get; set; }
         public string ColumnName { get; set; }
-
-        public TableAttribute(string pTableName, string pColumnName) {
-            TableName = pTableName;
-            ColumnName = pColumnName;
-        }
     }
 }
