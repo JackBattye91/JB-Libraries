@@ -550,5 +550,89 @@ namespace JB.SqlDatabase.SQlite {
 
             return rc;
         }
+        protected static async Task<IReturnCode<IList<object?>>> PopulateObjects(SqliteConnection pConnection, SqlDatabase.Interfaces.IDataReader? pDataReader, Type pObjectType) {
+            IReturnCode<IList<object?>> rc = new ReturnCode<IList<object?>>();
+            IList<object?> objList = new List<object?>();
+
+            try {
+                PropertyInfo[] properties = pObjectType.GetProperties();
+
+                while (pDataReader?.NextRow() == true) {
+                    object? obj = default;
+                    obj = Activator.CreateInstance(pObjectType);
+
+                    foreach (var prop in properties) {
+                        if (pDataReader.HasValue(prop.Name)) {
+                            object value = pDataReader.Get(prop.Name);
+
+                            if (prop.PropertyType == typeof(int)) {
+                                prop.SetValue(obj, Convert.ToInt32(value));
+                            }
+                            else if (prop.PropertyType.IsEnum) {
+                                int intValue = Convert.ToInt32(value);
+                                prop.SetValue(obj, prop.PropertyType.GetEnumValues().GetValue(intValue));
+                            }
+                            else if (prop.PropertyType == typeof(string)) {
+                                prop.SetValue(obj, (string)value);
+                            }
+                            else if (prop.PropertyType == typeof(bool)) {
+                                prop.SetValue(obj, (long)value != 0);
+                            }
+                            else if (prop.PropertyType == typeof(float)) {
+                                prop.SetValue(obj, Convert.ToSingle(value));
+                            }
+                            else if (prop.PropertyType == typeof(double)) {
+                                prop.SetValue(obj, value);
+                            }
+                            else if (prop.PropertyType == typeof(byte)) {
+                                prop.SetValue(obj, Convert.ToByte(value));
+                            }
+                            else if (prop.PropertyType.IsClass) {
+                                string itemId = (string)value;
+                                CustomAttributeData? tableAttribute = prop.CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                                string? tableName = tableAttribute?.NamedArguments[0].TypedValue.Value as string;
+                                string? columnName = tableAttribute?.NamedArguments[1].TypedValue.Value as string;
+
+                                if (tableName == null) {
+                                    rc.ErrorCode = ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
+                                    rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Table name missing from table attributes")));
+                                }
+                                else if (columnName == null) {
+                                    rc.ErrorCode = ErrorCodes.COLUMN_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
+                                    rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Column name missing from table attributes")));
+                                }
+                                else {
+                                    IReturnCode<IList<object?>> getSubObjectRc = await Get(pConnection, tableName, prop.PropertyType, $"{columnName} = '{itemId}'");
+
+                                    if (getSubObjectRc.Success) {
+                                        if (getSubObjectRc.Data!.Count == 0) {
+
+                                        }
+                                        else if (getSubObjectRc.Data!.Count > 1) {
+
+                                        }
+                                        else {
+                                            prop.SetValue(obj, getSubObjectRc.Data![0]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    objList.Add(obj);
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.POPULATE_OBJECT_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = objList;
+            }
+
+            return rc;
+        }
     }
 }
