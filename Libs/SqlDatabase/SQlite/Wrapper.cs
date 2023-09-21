@@ -8,6 +8,7 @@ using System.Data;
 using Microsoft.Data.Sqlite;
 using System.Reflection;
 using JB.SqlDatabase.Attributes;
+using JB.SqlDatabase.SQlite.Interfaces;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Wrapper : IWrapper {
@@ -87,9 +88,9 @@ namespace JB.SqlDatabase.SQlite {
         }
 
 
-        public async Task<IReturnCode<Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
-            IReturnCode<Interfaces.IDataReader> rc = new ReturnCode<Interfaces.IDataReader>();
-            Interfaces.IDataReader? dataReader = null;
+        public async Task<IReturnCode<SqlDatabase.Interfaces.IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
+            IReturnCode<SqlDatabase.Interfaces.IDataReader> rc = new ReturnCode<SqlDatabase.Interfaces.IDataReader>();
+            SqlDatabase.Interfaces.IDataReader? dataReader = null;
             SqliteConnection connection = CreateConnection(pDatabaseName); ;
 
             try {
@@ -121,7 +122,7 @@ namespace JB.SqlDatabase.SQlite {
             
             return rc;
         }
-        public Task<IReturnCode<Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+        public Task<IReturnCode<SqlDatabase.Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
             throw new NotImplementedException();
         }
 
@@ -169,10 +170,10 @@ namespace JB.SqlDatabase.SQlite {
         }
         public async Task<IReturnCode<T>> Insert<T>(string pDatabaseName, string pTableName, T pItem) {
             IReturnCode<T> rc = new ReturnCode<T>();
-            Interfaces.IDataReader? dataReader = null;
+            SqlDatabase.Interfaces.IDataReader? dataReader = null;
             SqliteConnection connection = CreateConnection(pDatabaseName);
             StringBuilder queryBuilder = new StringBuilder();
-            IDictionary<string, object?> dataMap = new Dictionary<string, object?>();
+            IList<IObjectProperty> propertiesList = new List<IObjectProperty>();
 
             try {
                 if (rc.Success) {
@@ -185,10 +186,10 @@ namespace JB.SqlDatabase.SQlite {
                 }
 
                 if (rc.Success) {
-                    IReturnCode<IDictionary<string, object?>> getValuesRc = Worker.GetObjectValues(pItem);
+                    IReturnCode<IList<IObjectProperty>> getValuesRc = Worker.GetObjectProperties(pItem);
 
                     if (getValuesRc.Success) {
-                        dataMap = getValuesRc.Data!;
+                        propertiesList = getValuesRc.Data!;
                     }
 
                     if (getValuesRc.Failed) {
@@ -199,20 +200,32 @@ namespace JB.SqlDatabase.SQlite {
                 if (rc.Success) {
                     queryBuilder.Append($"INSERT INTO {pTableName}(");
 
-                    IList<string> keyList = dataMap.Keys.ToList();
-                    for (int k = 0; k < keyList.Count; k++) {
-                        string key = keyList[k];
-                        queryBuilder.Append($"{key}");
+                    for (int k = 0; k < propertiesList.Count; k++) {
+                        // is ignored
+                        if (propertiesList[k].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
+                            continue;
+                        }
 
-                        if (k + 1 < keyList.Count) {
+                        if (k != 0) {
                             queryBuilder.Append(',');
                         }
+
+                        string key = propertiesList[k].Name;
+                        queryBuilder.Append($"{key}");
                     }
                     queryBuilder.Append(") VALUES (");
 
-                    IList<object?> valueList = dataMap.Values.ToList();
-                    for (int v = 0; v < valueList.Count; v++) {
-                        object? value = valueList[v];
+                    for (int v = 0; v < propertiesList.Count; v++) {
+                        // is ignored
+                        if (propertiesList[v].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
+                            continue;
+                        }
+
+                        if (v != 0) {
+                            queryBuilder.Append(',');
+                        }
+
+                        object? value = propertiesList[v].Value;
 
                         if (value?.GetType() ==  typeof(string)) {
                             queryBuilder.Append($"'{value}'");
@@ -222,15 +235,16 @@ namespace JB.SqlDatabase.SQlite {
                         }
                         else if (value?.GetType().IsClass == true) {
                             CustomAttributeData? tableAttribute = value.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                            string? tableName = tableAttribute?.ConstructorArguments[0].Value as string;
+                            string? columnName = tableAttribute?.ConstructorArguments[1].Value as string;
+
 
                         }
                         else {
                             queryBuilder.Append($"{value}");
                         }
                         
-                        if (v + 1 < valueList.Count) {
-                            queryBuilder.Append(',');
-                        }
+                        
                     }
 
                     queryBuilder.Append(");");
@@ -257,10 +271,10 @@ namespace JB.SqlDatabase.SQlite {
         }
         public async Task<IReturnCode<T>> Update<T>(string pDatabaseName, string pTableName, T pItem, string pQueryParameters) {
             IReturnCode<T> rc = new ReturnCode<T>();
-            Interfaces.IDataReader? dataReader = null;
+            SqlDatabase.Interfaces.IDataReader? dataReader = null;
             SqliteConnection connection = CreateConnection(pDatabaseName);
             StringBuilder queryBuilder = new StringBuilder();
-            IDictionary<string, object?> dataMap = new Dictionary<string, object?>();
+            IList<IObjectProperty> dataMap = new List<IObjectProperty>();
 
             try {
                 if (rc.Success) {
@@ -273,7 +287,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
 
                 if (rc.Success) {
-                    IReturnCode<IDictionary<string, object?>> getValuesRc = Worker.GetObjectValues(pItem);
+                    IReturnCode<IList<IObjectProperty>> getValuesRc = Worker.GetObjectProperties(pItem);
 
                     if (getValuesRc.Success) {
                         dataMap = getValuesRc.Data!;
@@ -285,33 +299,34 @@ namespace JB.SqlDatabase.SQlite {
                 }
 
                 if (rc.Success) {
-                    queryBuilder.Append($"UPDATE {pTableName} SET");
+                    queryBuilder.Append($"UPDATE {pTableName} SET ");
 
                     for(int p = 0; p < dataMap.Count; p++) {
-                        if (p != 0) {
-                            queryBuilder.Append(", ");
-                        }
+                        IObjectProperty prop = dataMap[p];
+                        if (prop.Attributes.Where(x => x.AttributeType == typeof(Attributes.IgnoreAttribute)) == null) {
+                            if (p != 0) {
+                                queryBuilder.Append(", ");
+                            }
 
-                        KeyValuePair<string, object?> prop = dataMap.ElementAt(p);
+                            if (prop.Value?.GetType() == typeof(string)) {
+                                queryBuilder.Append($"{prop.Name} = '{prop.Value}'");
+                            }
+                            else if (prop.Value?.GetType().IsEnum == true) {
+                                queryBuilder.Append($"{prop.Name} = '{(int)prop.Value}'");
+                            }
+                            else if (prop.Value?.GetType().IsClass == true) {
+                                CustomAttributeData? tableAttribute = prop.Attributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                                PropertyInfo[] subItemProps = prop.Value.GetType().GetProperties();
 
-                        if (prop.Value?.GetType() == typeof(string)) {
-                            queryBuilder.Append($"{prop.Key} = '{prop.Value}'");
-                        }
-                        else if (prop.Value?.GetType().IsEnum == true) {
-                            queryBuilder.Append($"{prop.Key} = '{(int)prop.Value}'");
-                        }
-                        else if (prop.Value?.GetType().IsClass == true) {
-                            CustomAttributeData? tableAttribute = prop.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
-                            PropertyInfo[] subItemProps = prop.Value.GetType().GetProperties();
-
-                            foreach(var subProp in subItemProps) {
-                                if (subProp.Name == (string?)tableAttribute?.ConstructorArguments[1].Value) {
-                                    subProp.GetValue(prop.Value, null);
+                                foreach (var subProp in subItemProps) {
+                                    if (subProp.Name == (string?)tableAttribute?.NamedArguments[1].TypedValue.Value) {
+                                        subProp.GetValue(prop.Value, null);
+                                    }
                                 }
                             }
-                        }
-                        else {
-                            queryBuilder.Append($"{prop.Key} = {prop.Value}");
+                            else {
+                                queryBuilder.Append($"{prop.Name} = {prop.Value}");
+                            }
                         }
                     }
 
@@ -423,8 +438,8 @@ namespace JB.SqlDatabase.SQlite {
                             IReturnCode<bool> createSubTableRc = await CreateTable(pConnection, prop.Name, prop.PropertyType);
 
                             if (createSubTableRc.Success) {
-                                string? tableName = (string?)tableAttribute.ConstructorArguments[0].Value;
-                                string? tableColumn = (string?)tableAttribute.ConstructorArguments[1].Value;
+                                string? tableName = tableAttribute.NamedArguments[0].TypedValue.Value as string;
+                                string? tableColumn = tableAttribute.NamedArguments[1].TypedValue.Value as string;
 
                                 if (p > 0) {
                                     queryBuilder.Append(", ");
@@ -463,7 +478,7 @@ namespace JB.SqlDatabase.SQlite {
         }
         protected static async Task<IReturnCode<IList<object?>>> Get(SqliteConnection pConnection, string pTableName, Type pObjectType, string? pQueryParameters = null) {
             IReturnCode<IList<object?>> rc = new ReturnCode<IList<object?>>();
-            Interfaces.IDataReader? dataReader = null;
+            SqlDatabase.Interfaces.IDataReader? dataReader = null;
             StringBuilder queryBuilder = new StringBuilder();
             IList<object?> itemsList = new List<object?>();
 
