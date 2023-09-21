@@ -170,7 +170,6 @@ namespace JB.SqlDatabase.SQlite {
         }
         public async Task<IReturnCode<T>> Insert<T>(string pDatabaseName, string pTableName, T pItem) {
             IReturnCode<T> rc = new ReturnCode<T>();
-            SqlDatabase.Interfaces.IDataReader? dataReader = null;
             SqliteConnection connection = CreateConnection(pDatabaseName);
             StringBuilder queryBuilder = new StringBuilder();
             IList<IObjectProperty> propertiesList = new List<IObjectProperty>();
@@ -186,87 +185,16 @@ namespace JB.SqlDatabase.SQlite {
                 }
 
                 if (rc.Success) {
-                    IReturnCode<IList<IObjectProperty>> getValuesRc = Worker.GetObjectProperties(pItem);
+                    IReturnCode<object?> getObjectsRc = await Insert(connection, pTableName, typeof(T), pItem);
 
-                    if (getValuesRc.Success) {
-                        propertiesList = getValuesRc.Data!;
-                    }
-
-                    if (getValuesRc.Failed) {
-                        ErrorWorker.CopyErrors(getValuesRc, rc);
-                    }
-                }
-
-                if (rc.Success) {
-                    queryBuilder.Append($"INSERT INTO {pTableName}(");
-
-                    for (int k = 0; k < propertiesList.Count; k++) {
-                        // is ignored
-                        if (propertiesList[k].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
-                            continue;
-                        }
-
-                        if (k != 0) {
-                            queryBuilder.Append(', ');
-                        }
-
-                        string key = propertiesList[k].Name;
-                        queryBuilder.Append($"{key}");
-                    }
-                    queryBuilder.Append(") VALUES (");
-
-                    for (int v = 0; v < propertiesList.Count; v++) {
-                        // is ignored
-                        if (propertiesList[v].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
-                            continue;
-                        }
-
-                        if (v != 0) {
-                            queryBuilder.Append(', ');
-                        }
-
-                        object? value = propertiesList[v].Value;
-
-                        if (value?.GetType() ==  typeof(string)) {
-                            queryBuilder.Append($"'{value}'");
-                        }
-                        else if (value?.GetType().IsEnum == true) {
-                            queryBuilder.Append($"{(int)value}");
-                        }
-                        else if (value?.GetType().IsClass == true) {
-                            CustomAttributeData? tableAttribute = value.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
-                            string? columnName = tableAttribute?.ConstructorArguments[1].Value as string;
-
-							var getSubObjectProperties = Worker.GetObjectProperties(value);
-							
-							if (getSubObjectProperties.Success) {
-								foreach(var subProp in getSubObjectProperties.Data) {
-									if (subProp.Name.Equals(columnName)) {
-										queryBuilder.Append($"'{subProp.Value}'");
-										break;
+                    if (getObjectsRc.Success) {
+                        pItem = (T)getObjectsRc.Data!;
 									}
-								}
-							}
 							if (getObjectsRc.Failed) {
 								ErrorWorker.CopyErrors(getObjectsRc, rc);
 							}
                         }
-                        else {
-                            queryBuilder.Append($"{value}");
                         }
-                    }
-
-                    queryBuilder.Append(");");
-                }
-
-                if (rc.Success) {
-                    SqliteCommand command = connection.CreateCommand();
-                    command.CommandType = CommandType.Text;
-                    command.CommandText = queryBuilder.ToString();
-
-                    dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
-                }
-            }
             catch (Exception ex) {
                 rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
                 rc.Errors.Add(new Error(rc.ErrorCode, ex));
@@ -547,6 +475,117 @@ namespace JB.SqlDatabase.SQlite {
             if (rc.Success) {
                 rc.Data = itemsList;
             }
+
+            return rc;
+        }
+        protected static async Task<IReturnCode<object?>> Insert(SqliteConnection pConnection, string pTableName, Type pObjectType, object? pObject) {
+            IReturnCode<object?> rc = new ReturnCode<object?>();
+            SqlDatabase.Interfaces.IDataReader? dataReader = null;
+            StringBuilder queryBuilder = new StringBuilder();
+            IList<IObjectProperty> propertiesList = new List<IObjectProperty>();
+
+            try {
+                if (rc.Success) {
+                    if (pConnection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    IReturnCode<IList<IObjectProperty>> getValuesRc = Worker.GetObjectProperties(pObject);
+
+                    if (getValuesRc.Success) {
+                        propertiesList = getValuesRc.Data!;
+                    }
+
+                    if (getValuesRc.Failed) {
+                        ErrorWorker.CopyErrors(getValuesRc, rc);
+                    }
+                }
+
+                if (rc.Success) {
+                    queryBuilder.Append($"INSERT INTO {pTableName}(");
+
+                    for (int k = 0; k < propertiesList.Count; k++) {
+                        // is ignored
+                        if (propertiesList[k].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
+                            continue;
+                        }
+
+                        if (k != 0) {
+                            queryBuilder.Append(", ");
+                        }
+
+                        string key = propertiesList[k].Name;
+                        queryBuilder.Append($"{key}");
+                    }
+                    queryBuilder.Append(") VALUES (");
+
+                    for (int v = 0; v < propertiesList.Count; v++) {
+                        // is ignored
+                        if (propertiesList[v].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
+                            continue;
+                        }
+
+                        if (v != 0) {
+                            queryBuilder.Append(", ");
+                        }
+
+                        object? value = propertiesList[v].Value;
+
+                        if (value?.GetType() == typeof(string)) {
+                            queryBuilder.Append($"'{value}'");
+                        }
+                        else if (value?.GetType().IsEnum == true) {
+                            queryBuilder.Append($"{(int)value}");
+                        }
+                        else if (value?.GetType().IsClass == true) {
+                            CustomAttributeData? tableAttribute = propertiesList[v].Attributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+                            string? tableName = tableAttribute?.NamedArguments[0].TypedValue.Value as string;
+                            string? columnName = tableAttribute?.NamedArguments[1].TypedValue.Value as string;
+
+
+
+                            if (tableName == null) {
+                                rc.ErrorCode = ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
+                                rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Table name missing from table attributes")));
+                            }
+                            else if (columnName == null) {
+                                rc.ErrorCode = ErrorCodes.COLUMN_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
+                                rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Column name missing from table attributes")));
+                            }
+                            else {
+                                var insertSubItemRc = await Insert(pConnection, tableName!, value.GetType(), value);
+
+                                if (insertSubItemRc.Success) {
+                                    var getSubObjectProperties = Worker.GetObjectProperties(value);
+
+                                    if (getSubObjectProperties.Success) {
+                                        foreach (var subProp in getSubObjectProperties.Data!) {
+                                            if (subProp.Name.Equals(columnName, StringComparison.CurrentCultureIgnoreCase)) {
+                                                queryBuilder.Append($"'{subProp.Value}'");
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (getSubObjectProperties.Failed) {
+                                        ErrorWorker.CopyErrors(getSubObjectProperties, rc);
+                                    }
+                                }
+
+                                if (insertSubItemRc.Failed) {
+                                    ErrorWorker.CopyErrors(insertSubItemRc, rc);
+                                }
+                            }
+                        }
+                        else {
+                            queryBuilder.Append($"{value}");
+                        }
+                    }
+
+                    queryBuilder.Append(");");
+                }
 
             return rc;
         }
