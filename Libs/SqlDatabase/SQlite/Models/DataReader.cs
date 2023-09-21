@@ -10,7 +10,7 @@ using System.Data.Common;
 
 namespace JB.SqlDatabase.SQlite.Models
 {
-    internal class DataReader : Interfaces.IDataReader
+    internal class DataReader : SqlDatabase.Interfaces.IDataReader
     {
         protected SqliteDataReader SqlDataReader { get; set; }
 
