@@ -10,8 +10,7 @@ using System.Data.Common;
 
 namespace JB.SqlDatabase.SQlite.Models
 {
-    internal class DataReader : SqlDatabase.Interfaces.IDataReader
-    {
+    internal class DataReader : SqlDatabase.Interfaces.IDataReader {
         protected SqliteDataReader SqlDataReader { get; set; }
 
         public DataReader(SqliteDataReader pReader)
@@ -27,11 +26,17 @@ namespace JB.SqlDatabase.SQlite.Models
         {
             return SqlDataReader.Read();
         }
+
+        public int RowsAffected() {
+            return SqlDataReader.RecordsAffected;
+        }
+
         public object Get(string pName)
         {
             int ordinal = SqlDataReader.GetOrdinal(pName);
             return SqlDataReader.GetValue(ordinal);
         }
+
         public object Get(int pOrdinal) {
             return SqlDataReader.GetValue(pOrdinal);
         }
