@@ -135,13 +135,13 @@ namespace JB.SqlDatabase.SQlite {
             return rc;
         }
 
-        public static IReturnCode<IList<IObjectProperty>> GetObjectProperties<T>(T pObj) {
+        public static IReturnCode<IList<IObjectProperty>> GetObjectProperties(object pObj) {
             IReturnCode<IList<IObjectProperty>> rc = new ReturnCode<IList<IObjectProperty>>();
             IList<IObjectProperty> propertiesList = new List<IObjectProperty>();
 
             try {
                 if (rc.Success) {
-                    PropertyInfo[] properties = typeof(T).GetProperties();
+                    PropertyInfo[] properties = pObj.GetType().GetProperties();
 
                     foreach (var prop in properties) {
                         propertiesList.Add(new Models.ObjectProperty() {
