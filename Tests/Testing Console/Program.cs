@@ -28,7 +28,7 @@ namespace JB {
         public float Percentage { get; set; } = 4.32f;
         public double Precision { get; set; } = 9.876654;
         public byte Small { get; set; } = 4;
-        [JB.SqlDatabase.Attributes.Table("testSub", "Name")]
+        [JB.SqlDatabase.Attributes.Table(TableName ="testSub", ColumnName ="Name")]
         public subClass Sub { get; set; } = new subClass();
 
         public override string ToString() {
