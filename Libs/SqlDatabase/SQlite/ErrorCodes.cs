@@ -19,5 +19,8 @@ namespace JB.SqlDatabase.SQlite {
         public const int INSERT_DATA_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 9;
         public const int GET_OBJECT_VALUES_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 10;
         public const int DELETE_TABLE_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 11;
+        public const int TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 12;
+        public const int COLUMN_NAME_MISSING_FROM_TABLE_ATTRIBUTE = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 13;
+        public const int NO_ROWS_AFFECTED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 14;
     }
 }
