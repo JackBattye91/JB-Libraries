@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using JB.Common;
 using JB.SqlDatabase.Attributes;
 using JB.SqlDatabase.Interfaces;
+using JB.SqlDatabase.SQlite.Interfaces;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Worker {
-        public static IReturnCode<T> ParseData<T>(Interfaces.IDataReader? dataReader) where T : struct {
+        public static IReturnCode<T> ParseData<T>(SqlDatabase.Interfaces.IDataReader? dataReader) where T : struct {
             IReturnCode<T> rc = new ReturnCode<T>();
             T obj = default;
 
@@ -134,16 +135,20 @@ namespace JB.SqlDatabase.SQlite {
             return rc;
         }
 
-        public static IReturnCode<IDictionary<string, object?>> GetObjectValues<T>(T pObj) {
-            IReturnCode<IDictionary<string, object?>> rc = new ReturnCode<IDictionary<string, object?>>();
-            IDictionary<string, object?> valuesMap = new Dictionary<string, object?>();
+        public static IReturnCode<IList<IObjectProperty>> GetObjectProperties<T>(T pObj) {
+            IReturnCode<IList<IObjectProperty>> rc = new ReturnCode<IList<IObjectProperty>>();
+            IList<IObjectProperty> propertiesList = new List<IObjectProperty>();
 
             try {
                 if (rc.Success) {
                     PropertyInfo[] properties = typeof(T).GetProperties();
 
                     foreach (var prop in properties) {
-                        valuesMap.Add(prop.Name, prop.GetValue(pObj));
+                        propertiesList.Add(new Models.ObjectProperty() {
+                            Name = prop.Name,
+                            Value = prop.GetValue(pObj),
+                            Attributes = prop.CustomAttributes.ToList()
+                        });
                     }
                 }
             }
@@ -153,7 +158,7 @@ namespace JB.SqlDatabase.SQlite {
             }
 
             if (rc.Success) {
-                rc.Data = valuesMap;
+                rc.Data = propertiesList;
             }
 
             return rc;
