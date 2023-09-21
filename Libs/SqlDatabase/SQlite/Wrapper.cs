@@ -122,7 +122,7 @@ namespace JB.SqlDatabase.SQlite {
             
             return rc;
         }
-        public Task<IReturnCode<SqlDatabase.Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+        public Task<IReturnCode<SqlDatabase.Interfaces.IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object?> pParameters) {
             throw new NotImplementedException();
         }
 
@@ -207,7 +207,7 @@ namespace JB.SqlDatabase.SQlite {
                         }
 
                         if (k != 0) {
-                            queryBuilder.Append(',');
+                            queryBuilder.Append(', ');
                         }
 
                         string key = propertiesList[k].Name;
@@ -222,7 +222,7 @@ namespace JB.SqlDatabase.SQlite {
                         }
 
                         if (v != 0) {
-                            queryBuilder.Append(',');
+                            queryBuilder.Append(', ');
                         }
 
                         object? value = propertiesList[v].Value;
@@ -235,16 +235,25 @@ namespace JB.SqlDatabase.SQlite {
                         }
                         else if (value?.GetType().IsClass == true) {
                             CustomAttributeData? tableAttribute = value.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
-                            string? tableName = tableAttribute?.ConstructorArguments[0].Value as string;
                             string? columnName = tableAttribute?.ConstructorArguments[1].Value as string;
 
-
+							var getSubObjectProperties = Worker.GetObjectProperties(value);
+							
+							if (getSubObjectProperties.Success) {
+								foreach(var subProp in getSubObjectProperties.Data) {
+									if (subProp.Name.Equals(columnName)) {
+										queryBuilder.Append($"'{subProp.Value}'");
+										break;
+									}
+								}
+							}
+							if (getObjectsRc.Failed) {
+								ErrorWorker.CopyErrors(getObjectsRc, rc);
+							}
                         }
                         else {
                             queryBuilder.Append($"{value}");
                         }
-                        
-                        
                     }
 
                     queryBuilder.Append(");");
@@ -303,32 +312,42 @@ namespace JB.SqlDatabase.SQlite {
 
                     for(int p = 0; p < dataMap.Count; p++) {
                         IObjectProperty prop = dataMap[p];
-                        if (prop.Attributes.Where(x => x.AttributeType == typeof(Attributes.IgnoreAttribute)) == null) {
-                            if (p != 0) {
-                                queryBuilder.Append(", ");
-                            }
+                        if (prop.Attributes.Where(x => x.AttributeType == typeof(Attributes.IgnoreAttribute)).FirstOrDefault() != null) {
+							continue;
+						}
+						
+                        if (p != 0) {
+							queryBuilder.Append(", ");
+						}
 
-                            if (prop.Value?.GetType() == typeof(string)) {
-                                queryBuilder.Append($"{prop.Name} = '{prop.Value}'");
-                            }
-                            else if (prop.Value?.GetType().IsEnum == true) {
-                                queryBuilder.Append($"{prop.Name} = '{(int)prop.Value}'");
-                            }
-                            else if (prop.Value?.GetType().IsClass == true) {
-                                CustomAttributeData? tableAttribute = prop.Attributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
-                                PropertyInfo[] subItemProps = prop.Value.GetType().GetProperties();
+						if (prop.Value?.GetType() == typeof(string)) {
+							queryBuilder.Append($"{prop.Name} = '{prop.Value}'");
+						}
+						else if (prop.Value?.GetType().IsEnum == true) {
+							queryBuilder.Append($"{prop.Name} = '{(int)prop.Value}'");
+						}
+						else if (prop.Value?.GetType().IsClass == true) {
+							CustomAttributeData? tableAttribute = value.GetType().CustomAttributes.Where(x => x.AttributeType == typeof(TableAttribute)).FirstOrDefault();
+							string? columnName = tableAttribute?.ConstructorArguments[1].Value as string;
 
-                                foreach (var subProp in subItemProps) {
-                                    if (subProp.Name == (string?)tableAttribute?.NamedArguments[1].TypedValue.Value) {
-                                        subProp.GetValue(prop.Value, null);
-                                    }
-                                }
-                            }
-                            else {
-                                queryBuilder.Append($"{prop.Name} = {prop.Value}");
-                            }
-                        }
-                    }
+							var getSubObjectProperties = Worker.GetObjectProperties(value);
+							
+							if (getSubObjectProperties.Success) {
+								foreach(var subProp in getSubObjectProperties.Data) {
+									if (subProp.Name.Equals(columnName)) {
+										queryBuilder.Append($"{prop.Name} = '{subProp.Value}'");
+										break;
+									}
+								}
+							}
+							if (getObjectsRc.Failed) {
+								ErrorWorker.CopyErrors(getObjectsRc, rc);
+							}
+						}
+						else {
+							queryBuilder.Append($"{prop.Name} = {prop.Value}");
+						}
+					}
 
                     queryBuilder.Append($" WHERE {pQueryParameters};");
                 }
