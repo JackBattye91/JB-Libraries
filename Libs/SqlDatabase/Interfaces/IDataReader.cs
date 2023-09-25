@@ -12,8 +12,8 @@ namespace JB.SqlDatabase.Interfaces {
         bool HasRows();
         bool NextRow();
         int RowsAffected();
-        object Get(string pName);
-        object Get(int pOrdinal);
+        object? Get(string pName);
+        object? Get(int pOrdinal);
         bool HasValue(string pName);
         int GetOrdinal(string pName);
         
