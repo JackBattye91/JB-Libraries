@@ -31,14 +31,15 @@ namespace JB.SqlDatabase.SQlite.Models
             return SqlDataReader.RecordsAffected;
         }
 
-        public object Get(string pName)
+        public object? Get(string pName)
         {
             int ordinal = SqlDataReader.GetOrdinal(pName);
-            return SqlDataReader.GetValue(ordinal);
+            return Get(ordinal);
         }
 
-        public object Get(int pOrdinal) {
-            return SqlDataReader.GetValue(pOrdinal);
+        public object? Get(int pOrdinal) {
+            object value = SqlDataReader.GetValue(pOrdinal);            
+            return value == DBNull.Value ? null : value;
         }
 
         public bool HasValue(string pName)
