@@ -168,6 +168,47 @@ namespace JB.SqlDatabase.SQlite {
 
             return rc;
         }
+        public async Task<IReturnCode<IList<Tinterface>>> Get<Tinterface, Tmodel>(string pDatabaseName, string pTableName, string? pQueryParameters = null) where Tmodel : Tinterface {
+            IReturnCode<IList<Tinterface>> rc = new ReturnCode<IList<Tinterface>>();
+            SqliteConnection connection = CreateConnection(pDatabaseName);
+            IList<Tinterface> itemsList = new List<Tinterface>();
+
+            try {
+                if (rc.Success) {
+                    await connection.OpenAsync();
+
+                    if (connection.State != ConnectionState.Open) {
+                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
+                        rc.Errors.Add(new Error(rc.ErrorCode));
+                    }
+                }
+
+                if (rc.Success) {
+                    IReturnCode<IList<object?>> getObjectsRc = await Get(connection, pTableName, typeof(Tmodel), pQueryParameters);
+
+                    if (getObjectsRc.Success) {
+                        foreach (object? obj in getObjectsRc.Data!) {
+                            if (obj is Tmodel) {
+                                itemsList.Add((Tmodel)obj!);
+                            }
+                        }
+                    }
+                    if (getObjectsRc.Failed) {
+                        ErrorWorker.CopyErrors(getObjectsRc, rc);
+                    }
+                }
+            }
+            catch (Exception ex) {
+                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
+                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = itemsList;
+            }
+
+            return rc;
+        }
         public async Task<IReturnCode<T>> Insert<T>(string pDatabaseName, string pTableName, T pItem) {
             IReturnCode<T> rc = new ReturnCode<T>();
             SqliteConnection connection = CreateConnection(pDatabaseName);
@@ -238,7 +279,7 @@ namespace JB.SqlDatabase.SQlite {
 
                     for(int p = 0; p < dataMap.Count; p++) {
                         IObjectProperty prop = dataMap[p];
-                        if (prop.Attributes.Where(x => x.AttributeType == typeof(Attributes.IgnoreAttribute)).FirstOrDefault() != null) {
+                        if (prop.Attributes.Where(x => x.AttributeType == typeof(Attributes.IgnoreAttribute)).FirstOrDefault() != null || prop.Value == null) {
 							continue;
 						}
 						
@@ -519,7 +560,8 @@ namespace JB.SqlDatabase.SQlite {
 
                     for (int k = 0; k < propertiesList.Count; k++) {
                         // is ignored
-                        if (propertiesList[k].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
+                        if (propertiesList[k].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null ||
+                            propertiesList[k].Value == null) {
                             continue;
                         }
 
@@ -534,7 +576,8 @@ namespace JB.SqlDatabase.SQlite {
 
                     for (int v = 0; v < propertiesList.Count; v++) {
                         // is ignored
-                        if (propertiesList[v].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null) {
+                        if (propertiesList[v].Attributes.Where(x => x.AttributeType == typeof(IgnoreAttribute)).FirstOrDefault() != null ||
+                            propertiesList[v].Value == null) {
                             continue;
                         }
 
@@ -635,9 +678,12 @@ namespace JB.SqlDatabase.SQlite {
 
                     foreach (var prop in properties) {
                         if (pDataReader.HasValue(prop.Name)) {
-                            object value = pDataReader.Get(prop.Name);
+                            object? value = pDataReader.Get(prop.Name);
 
-                            if (prop.PropertyType == typeof(int)) {
+                            if (value == null) {
+                                continue;
+                            }
+                            else if (prop.PropertyType == typeof(int)) {
                                 prop.SetValue(obj, Convert.ToInt32(value));
                             }
                             else if (prop.PropertyType.IsEnum) {
@@ -645,7 +691,7 @@ namespace JB.SqlDatabase.SQlite {
                                 prop.SetValue(obj, prop.PropertyType.GetEnumValues().GetValue(intValue));
                             }
                             else if (prop.PropertyType == typeof(string)) {
-                                prop.SetValue(obj, (string)value);
+                                 prop.SetValue(obj, (string)value);
                             }
                             else if (prop.PropertyType == typeof(bool)) {
                                 prop.SetValue(obj, (long)value != 0);
