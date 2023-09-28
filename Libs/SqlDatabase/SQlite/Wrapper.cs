@@ -375,8 +375,12 @@ namespace JB.SqlDatabase.SQlite {
         }
 
 
-        protected static SqliteConnection CreateConnection(string pDatabaseName) {
-            return new SqliteConnection($"Data Source={pDatabaseName}");
+        protected static SqliteConnection CreateConnection(string pDatabaseName, string pVersion = "3") {
+            if (!File.Exists(pDatabaseName)) {
+                throw new Exception("Database file does not exist");
+            }
+
+            return new SqliteConnection($"Data Source={pDatabaseName}; Version={pVersion}");
         }
         protected static async Task<IReturnCode<bool>> CreateTable(SqliteConnection pConnection, string pTableName, Type pObjectType) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
