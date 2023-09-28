@@ -28,7 +28,7 @@ namespace JB {
         public float Percentage { get; set; } = 4.32f;
         public double Precision { get; set; } = 9.876654;
         public byte Small { get; set; } = 4;
-        [JB.SqlDatabase.Attributes.Table("testSub", "Name")]
+        [JB.SqlDatabase.Attributes.Table(TableName = "subClass", ColumnName ="Name")]
         public subClass Sub { get; set; } = new subClass();
 
         public override string ToString() {
@@ -43,7 +43,9 @@ namespace JB {
             JB.SqlDatabase.IWrapper sqlWrapper = JB.SqlDatabase.Factory.CreateSqlWrapperInstance();
             await sqlWrapper.CreateDatabase(dbName);
             await sqlWrapper.CreateTable<testClass>(dbName, "testClass");
-            testClass cls = new testClass() { Name = "John1", Description = "Blond" };
+            //await sqlWrapper.CreateTable<subClass>(dbName, "testSub");
+            subClass sub = new subClass() { Name = "Pandora" };
+            testClass cls = new testClass() { Name = "John1", Description = "Blond", Sub = sub };
 
             /*
             if (rc.Success) {
@@ -73,8 +75,20 @@ namespace JB {
             */
 
             /*
+            
+            */
+            
             if (rc.Success) {
-                IReturnCode<testClass> getDataRc = await sqlWrapper.Insert<testClass>(dbName, "testClass", cls);
+                IReturnCode<testClass> getDataRc = await sqlWrapper.Insert(dbName, "testClass", cls);
+
+                if (getDataRc.Failed) {
+                    ErrorWorker.CopyErrors(getDataRc, rc);
+                }
+            }
+            
+            if (rc.Success) {
+                cls.Percentage = 100;
+                IReturnCode<testClass> getDataRc = await sqlWrapper.Update(dbName, "testClass", cls, "Name = 'John1'");
 
                 if (getDataRc.Failed) {
                     ErrorWorker.CopyErrors(getDataRc, rc);
@@ -85,24 +99,13 @@ namespace JB {
                 IReturnCode<IList<testClass>> getDataRc = await sqlWrapper.Get<testClass>(dbName, "testClass");
 
                 if (getDataRc.Success) {
-                    foreach(var data in getDataRc.Data!) {
-                        Console.WriteLine(data);
-                    }
+                    Console.WriteLine(JsonConvert.SerializeObject(getDataRc.Data, Formatting.Indented));
                 }
                 if (getDataRc.Failed) {
                     ErrorWorker.CopyErrors(getDataRc, rc);
                 }
             }
-            */
-            
-            if (rc.Success) {
-                IReturnCode<testClass> getDataRc = await sqlWrapper.Update(dbName, "testClass", cls, "Name = 'John'");
 
-                if (getDataRc.Failed) {
-                    ErrorWorker.CopyErrors(getDataRc, rc);
-                }
-            }
-            
             if (rc.Failed) {
                 foreach(var error in rc.Errors) {
                     Console.WriteLine($"{error.ErrorCode} - {error.Exception?.Message}");
