@@ -18,7 +18,7 @@ namespace JB.Common {
             rc.Errors.Add(new Error(pCode, ex));
         }
 
-        public static void CopyErrors<T, U>(IReturnCode? pSource, IReturnCode? pDestination) {
+        public static void CopyErrors(IReturnCode? pSource, IReturnCode? pDestination) {
             if (pSource != null && pDestination != null) {
                 pDestination.ErrorCode = pSource.ErrorCode;
                 foreach (IError srcCodes in pSource.Errors) {
