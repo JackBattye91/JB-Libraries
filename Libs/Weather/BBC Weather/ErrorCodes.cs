@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Weather
-{
+namespace JB.Weather.BBC_Weather {
     internal class ErrorCodes
     {
         private const int SCOPE = 3;
