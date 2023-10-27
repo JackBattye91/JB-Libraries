@@ -7,12 +7,7 @@ using System.Threading.Tasks;
 namespace JB.SqlDatabase.Attributes {
     [AttributeUsage(AttributeTargets.Property)]
     public class TableAttribute : Attribute {
-        public string TableName { get; set; }
-        public string ColumnName { get; set; }
-
-        public TableAttribute(string pTableName, string pColumnName) {
-            TableName = pTableName;
-            ColumnName = pColumnName;
-        }
+        public string TableName { get; set; } = string.Empty;
+        public string ColumnName { get; set; } = string.Empty;
     }
 }
