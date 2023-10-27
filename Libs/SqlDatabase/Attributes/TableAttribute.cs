@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace JB.SqlDatabase.Attributes {
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class PrimaryKeyAttribute : Attribute {
+    public class TableAttribute : Attribute {
+        public string TableName { get; set; } = string.Empty;
+        public string ColumnName { get; set; } = string.Empty;
     }
 }
