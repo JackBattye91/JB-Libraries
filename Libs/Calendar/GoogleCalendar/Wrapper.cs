@@ -60,8 +60,7 @@ namespace JB.Calendar.GoogleCalendar {
                     }
                 }
                 catch (Exception ex) {
-                    rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_ITEMS;
-                    rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
+                    rc.AddError(new JB.Common.Error(ErrorCodes.UNABLE_TO_GET_ITEMS, ex));
                 }
             }
 
@@ -95,8 +94,7 @@ namespace JB.Calendar.GoogleCalendar {
                 newEvent = await request.ExecuteAsync();
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.UNABLE_TO_INSERT_NEW_ITEM;
-                rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
+                rc.AddError(new JB.Common.Error(ErrorCodes.UNABLE_TO_INSERT_NEW_ITEM, ex));
             }
 
             return rc;
@@ -127,8 +125,7 @@ namespace JB.Calendar.GoogleCalendar {
                     updatedEvent = await request.ExecuteAsync();
                 }
                 catch (Exception ex) {
-                    rc.ErrorCode = ErrorCodes.UNABLE_TO_UPDATE_ITEM;
-                    rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
+                    rc.AddError(new JB.Common.Error(ErrorCodes.UNABLE_TO_UPDATE_ITEM, ex));
                 }
             }
 
@@ -157,8 +154,7 @@ namespace JB.Calendar.GoogleCalendar {
                 string response = await request.ExecuteAsync();                
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.UNABLE_TO_DELETE_ITEM;
-                rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
+                rc.AddError(new JB.Common.Error(ErrorCodes.UNABLE_TO_DELETE_ITEM, ex));
             }
 
             return rc;
@@ -180,8 +176,7 @@ namespace JB.Calendar.GoogleCalendar {
                     userCredential = await GoogleWebAuthorizationBroker.AuthorizeAsync(clientSecrets, pScopes, "user", CancellationToken.None);
                 }
                 catch (Exception ex) {
-                    rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_USER_CREDENTIALS;
-                    rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
+                    rc.AddError(new JB.Common.Error(ErrorCodes.UNABLE_TO_GET_USER_CREDENTIALS, ex));
                 }
             }
             
