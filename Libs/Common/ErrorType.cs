@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Common.Errors {
+namespace JB.Common.Consts {
     public enum ErrorType {
-        SUCCESS = 0,
-        FAILURE = 1
+        INFORMATION,
+        WARNING,
+        ERROR
     }
 }
