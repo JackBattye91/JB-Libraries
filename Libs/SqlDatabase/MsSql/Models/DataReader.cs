@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 
 namespace JB.SqlDatabase.MsSql.Models {
+
     internal class DataReader : SqlDatabase.Interfaces.IDataReader {
         SqlDataReader SqlDataReader;
 
@@ -36,6 +37,10 @@ namespace JB.SqlDatabase.MsSql.Models {
 
         public bool NextRow() {
             return SqlDataReader.NextResult();
+        }
+
+        public int RowsAffected() {
+            return SqlDataReader.RecordsAffected;
         }
     }
 }
