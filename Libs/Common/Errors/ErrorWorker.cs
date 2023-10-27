@@ -15,14 +15,14 @@ namespace JB.Common {
             AddError(rc, pCode, new Exception(pMessage));
         }
         public static void AddError(IReturnCode rc, int pCode, Exception? ex) {
-            rc.Errors.Add(new Error(pCode, ex));
+            rc.AddError(new Error(pCode, ex));
         }
 
         public static void CopyErrors(IReturnCode? pSource, IReturnCode? pDestination) {
             if (pSource != null && pDestination != null) {
                 pDestination.ErrorCode = pSource.ErrorCode;
                 foreach (IError srcCodes in pSource.Errors) {
-                    pDestination?.Errors.Add(srcCodes);
+                    pDestination?.AddError(srcCodes);
                 }
             }
         }
