@@ -36,8 +36,7 @@ namespace JB.SqlDatabase.MsSql {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_DATABASE_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
             }
 
             return rc;
@@ -76,8 +75,7 @@ namespace JB.SqlDatabase.MsSql {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_DATABASE_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
             }
 
             return rc;
@@ -138,14 +136,12 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     if (sqlConnection?.State != System.Data.ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_CONNECTION_TO_SERVER;
-                        rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Connection is not open")));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_CONNECTION_TO_SERVER, new Exception("Connection is not open")));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_CONNECTION_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.CREATE_CONNECTION_FAILED, ex));
             }
 
             if (rc.Success) {
