@@ -69,8 +69,7 @@ namespace JB.Weather.BBC_Weather {
 
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.EXTRACT_FORCAST_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, System.Net.HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(ErrorCodes.EXTRACT_FORCAST_FAILED, System.Net.HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
