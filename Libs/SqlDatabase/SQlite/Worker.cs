@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using JB.Common;
 using JB.SqlDatabase.Attributes;
 using JB.SqlDatabase.Interfaces;
-using JB.SqlDatabase.SQlite.Interfaces;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Worker {
