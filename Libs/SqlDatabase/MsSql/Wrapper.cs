@@ -41,8 +41,49 @@ namespace JB.SqlDatabase.MsSql {
 
             return rc;
         }
-
         public async Task<IReturnCode<bool>> CreateTable<T>(string pDatabaseName, string pTableName) {
+            IReturnCode<bool> rc = new ReturnCode<bool>();
+            SqlConnection? connection = null;
+            IList<IObjectProperty> objectProperties = new List<IObjectProperty>();
+
+            try {
+                if (rc.Success) {
+                    IReturnCode<SqlConnection> connectRc = CreateConnection();
+
+                    if (connectRc.Success) {
+                        connection = connectRc.Data;
+                    }
+
+                    if (connectRc.Failed) {
+                        ErrorWorker.CopyErrors(connectRc, rc);
+                    }
+                }
+
+                if (rc.Success) {
+                    if (connection?.Database.Equals(pDatabaseName) != true) {
+                        rc.AddError(new Error(ErrorCodes.CONNECTED_TO_INCORRECT_DATABASE, new Exception("Connected to incorrect database")));
+                    }
+                }
+
+                if (rc.Success) {
+
+                }
+
+                if (rc.Success) {
+                    SqlCommand command = connection!.CreateCommand();
+                    command.CommandType = System.Data.CommandType.Text;
+                    command.CommandText = $"CREATE TABLE {pTableName}({parameters});";
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex) {
+                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
+            }
+
+            return rc;
+        }
+        public async Task<IReturnCode<bool>> DeleteTable(string pDatabaseName, string pTableName) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
             SqlConnection? connection = null;
 
@@ -61,17 +102,16 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     if (connection?.Database.Equals(pDatabaseName) != true) {
-                        rc.ErrorCode = ErrorCodes.CONNECTED_TO_INCORRECT_DATABASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Connected to incorrect database")));
+                        rc.AddError(new Error(ErrorCodes.CONNECTED_TO_INCORRECT_DATABASE, new Exception("Connected to incorrect database")));
                     }
                 }
 
                 if (rc.Success) {
                     SqlCommand command = connection!.CreateCommand();
                     command.CommandType = System.Data.CommandType.Text;
-                    command.CommandText = $"CREATE TABLE {pTableName}(params);";
+                    command.CommandText = $"DROP TABLE {pTableName};";
 
-                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    await command.ExecuteNonQueryAsync();
                 }
             }
             catch (Exception ex) {
@@ -81,38 +121,71 @@ namespace JB.SqlDatabase.MsSql {
             return rc;
         }
 
+        public Task<IReturnCode<IList<T>>> Get<T>(string pDatabaseName, string pTableName, string? pQueryParameters = null) {
+            throw new NotImplementedException();
+        }
+        public Task<IReturnCode<IList<Tinterface>>> Get<Tinterface, Tmodel>(string pDatabaseName, string pTableName, string? pQueryParameters = null) where Tmodel : Tinterface {
+            throw new NotImplementedException();
+        }
+        public Task<IReturnCode<T>> Insert<T>(string pDatabaseName, string pTableName, T pItem) {
+            throw new NotImplementedException();
+        }
+        public Task<IReturnCode<T>> Update<T>(string pDatabaseName, string pTableName, T pItem, string pQueryParameters) {
+            throw new NotImplementedException();
+        }
         public Task<IReturnCode<bool>> Delete(string pDatabaseName, string pTableName, string pQueryParameters) {
             throw new NotImplementedException();
         }
 
-        public Task<IReturnCode<bool>> DeleteTable(string pDatabaseName, string pTableName) {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReturnCode<IList<T>>> Get<T>(string pDatabaseName, string pTableName, string? pQueryParameters = null) {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReturnCode<IList<Tinterface>>> Get<Tinterface, Tmodel>(string pDatabaseName, string pTableName, string? pQueryParameters = null) where Tmodel : Tinterface {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReturnCode<T>> Insert<T>(string pDatabaseName, string pTableName, T pItem) {
-            throw new NotImplementedException();
-        }
 
         public Task<IReturnCode<IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
             throw new NotImplementedException();
         }
+        public async Task<IReturnCode<IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+            IReturnCode<IDataReader> rc = new ReturnCode<IDataReader>();
+            SqlConnection? connection = null;
+            IDataReader? dataReader = null;
 
-        public Task<IReturnCode<IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
-            throw new NotImplementedException();
+            try {
+                if (rc.Success) {
+                    IReturnCode<SqlConnection> connectRc = CreateConnection();
+
+                    if (connectRc.Success) {
+                        connection = connectRc.Data;
+                    }
+
+                    if (connectRc.Failed) {
+                        ErrorWorker.CopyErrors(connectRc, rc);
+                    }
+                }
+
+                if (rc.Success) {
+                    if (connection?.Database.Equals(pDatabaseName) != true) {
+                        rc.AddError(new Error(ErrorCodes.CONNECTED_TO_INCORRECT_DATABASE, new Exception("Connected to incorrect database")));
+                    }
+                }
+
+                if (rc.Success) {
+
+                }
+
+                if (rc.Success) {
+                    SqlCommand command = connection!.CreateCommand();
+                    command.CommandType = System.Data.CommandType.Text;
+                    command.CommandText = $"CREATE TABLE {pTableName}({parameters});";
+                    dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
+                }
+            }
+            catch (Exception ex) {
+                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
+            }
+
+            if (rc.Success) {
+                rc.Data = dataReader;
+            }
+
+            return rc;
         }
-
-        public Task<IReturnCode<T>> Update<T>(string pDatabaseName, string pTableName, T pItem, string pQueryParameters) {
-            throw new NotImplementedException();
-        }
-
 
         protected IReturnCode<SqlConnection> CreateConnection() {
             IReturnCode<SqlConnection> rc = new ReturnCode<SqlConnection>();
