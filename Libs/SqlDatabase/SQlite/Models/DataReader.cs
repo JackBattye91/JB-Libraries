@@ -10,46 +10,44 @@ using System.Data.Common;
 
 namespace JB.SqlDatabase.SQlite.Models
 {
-    internal class DataReader : Interfaces.IDataReader
-    {
-        protected SqliteDataReader sqlDataReader { get; set; }
+    internal class DataReader : SqlDatabase.Interfaces.IDataReader {
+        protected SqliteDataReader SqlDataReader { get; set; }
 
         public DataReader(SqliteDataReader pReader)
         {
-            sqlDataReader = pReader;
+            SqlDataReader = pReader;
         }
 
         public bool HasRows() {
-            return sqlDataReader.HasRows;
+            return SqlDataReader.HasRows;
         }
 
         public bool NextRow()
         {
-            return sqlDataReader.Read();
+            return SqlDataReader.Read();
         }
-        public object Get(string pName)
+
+        public int RowsAffected() {
+            return SqlDataReader.RecordsAffected;
+        }
+
+        public object? Get(string pName)
         {
-            int ordinal = sqlDataReader.GetOrdinal(pName);
-            return sqlDataReader.GetValue(ordinal);
+            int ordinal = SqlDataReader.GetOrdinal(pName);
+            return Get(ordinal);
         }
-        public object Get(int pOrdinal) {
-            return sqlDataReader.GetValue(pOrdinal);
+
+        public object? Get(int pOrdinal) {
+            object value = SqlDataReader.GetValue(pOrdinal);            
+            return value == DBNull.Value ? null : value;
         }
 
         public bool HasValue(string pName)
         {
-            DataTable dataTabe = sqlDataReader.GetSchemaTable();
-
-            foreach(DataColumn column in dataTabe.Columns) {
-                if (column.ColumnName.ToLower().Equals(pName.ToLower())) {
-                    return true;
-                }
-            }
-
-            return false;
+            return Get(pName) != null;
         }
         public int GetOrdinal(string pName) {
-            return sqlDataReader.GetOrdinal(pName);
+            return SqlDataReader.GetOrdinal(pName);
         }
     }
 }

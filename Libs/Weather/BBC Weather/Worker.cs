@@ -3,6 +3,7 @@ using JB.Weather.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -47,7 +48,8 @@ namespace JB.Weather.BBC_Weather {
                 forcast.PressureMb = 0;
             }
             catch (Exception ex) {
-                rc.Errors.Add(new WeatherError(ErrorCodes.EXTRACT_FORCAST_FAILED, System.Net.HttpStatusCode.InternalServerError, ex));
+                rc.ErrorCode = ErrorCodes.EXTRACT_FORCAST_FAILED;
+                rc.Errors.Add(new NetworkError(rc.ErrorCode, System.Net.HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
