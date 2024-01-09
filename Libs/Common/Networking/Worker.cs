@@ -9,7 +9,7 @@ using System.Net.Http;
 
 namespace JB.Common.Networking
 {
-    public class Worker
+    public static class Worker
     {
         public static string Base64Encode(string plainText)
         {
