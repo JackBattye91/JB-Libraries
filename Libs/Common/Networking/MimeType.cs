@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JB.Common.Networking {
-    public sealed class MimeType {
+    public static class MimeType {
         public static string TEXT = "text/plain";
         public static string HTML = "text/html";
         public static string CSS = "text/css";
