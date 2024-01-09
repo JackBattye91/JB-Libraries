@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.Common
+namespace JB.Common.Utilities
 {
     public static class ListExtensions
     {
