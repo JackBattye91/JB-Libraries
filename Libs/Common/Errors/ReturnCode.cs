@@ -65,7 +65,7 @@ namespace JB.Common {
     public interface IReturnCode {
         bool Success { get; }
         bool Failed { get; }
-        int ErrorCode { get; set; }
+        int ErrorCode { get; protected set; }
         IReadOnlyList<IError> Errors { get; }
         void AddError(IError pError);
     }
