@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Libs\Calendar\Calendar.csproj" />
     <ProjectReference Include="..\..\Libs\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Libs\Weather\Weather.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,11 +9,12 @@ namespace Calendar.Tests {
             // Arrange
             JB.Calendar.IWrapper wrapper = JB.Calendar.Factory.CreateCalendarWrapper();
 
-            var getEventsTask = wrapper.GetEvents();
+            Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>> getEventsTask = wrapper.GetEvents();
             getEventsTask.Wait();
+            JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>> getEventRc = getEventsTask.Result;
 
             // Assert
-            Assert.That(getEventsTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(getEventRc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -30,11 +31,12 @@ namespace Calendar.Tests {
                 Description = "Test event"
             };
 
-            var getEventsTask = wrapper.AddEvent(newEvent, "primary");
+            Task<JB.Common.IReturnCode<bool>> getEventsTask = wrapper.AddEvent(newEvent, "primary");
             getEventsTask.Wait();
+            var getEventsRc = getEventsTask.Result;
 
             // Assert
-            Assert.That(getEventsTask.Result.ErrorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(getEventsRc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -42,26 +44,41 @@ namespace Calendar.Tests {
             Environment.SetEnvironmentVariable("clientId", "892355022973-sr7kl51qh74fl9p9n4jad50062q1bgvi.apps.googleusercontent.com");
             Environment.SetEnvironmentVariable("clientSecret", "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");
 
+
             // Arrange
+            JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>> rc = new JB.Common.ReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>();
             JB.Calendar.IWrapper wrapper = JB.Calendar.Factory.CreateCalendarWrapper();
-            long errorCode = 0;
+            JB.Calendar.Interfaces.ICalendarEvent? calEvent = null;
 
-            Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>>? eventEventsTask = wrapper.GetEvents();
-            eventEventsTask.Wait();
-            if (eventEventsTask.Result.ErrorCode == 0) {
-                JB.Calendar.Interfaces.ICalendarEvent? newEvent = eventEventsTask?.Result?.Data?.Where(x => x.Description == "Test event").FirstOrDefault();
+            if (rc.Success) {
+                Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>> getEventTask = wrapper.GetEvents();
+                getEventTask.Wait();
+                var getEventRc = getEventTask.Result;
 
-                if (newEvent != null) {
-                    newEvent.Finish = DateTime.Now.AddDays(2);
-                    Task<JB.Common.IReturnCode<bool>>? getEventsTask = wrapper.UpdateEvent(newEvent, "primary");
-                    getEventsTask.Wait();
-                    errorCode = getEventsTask.Result.ErrorCode;
+                if (getEventRc.Success) {
+                    calEvent = rc.Data?.Where(x => x.Description == "Test event").FirstOrDefault();
+                }
+                else {
+                    JB.Common.ErrorWorker.CopyErrors(getEventRc, rc);
                 }
             }
             
+            if (rc.Success) {
+                if (calEvent != null) {
+                    calEvent.Finish = DateTime.Now.AddDays(2);
+                    Task<JB.Common.IReturnCode<bool>> updateEvenntTask = wrapper.UpdateEvent(calEvent, "primary");
+                    updateEvenntTask.Wait();
+                    var updateEvenntRc = updateEvenntTask.Result;
+
+                    if (updateEvenntRc.Success == false) {
+                        JB.Common.ErrorWorker.CopyErrors(updateEvenntRc, rc);
+                    }
+                }
+                
+            }
 
             // Assert
-            Assert.That(errorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
 
         [Test]
@@ -70,23 +87,30 @@ namespace Calendar.Tests {
             Environment.SetEnvironmentVariable("clientSecret", "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");
 
             // Arrange
+            JB.Common.IReturnCode<bool> rc = new JB.Common.ReturnCode<bool>();
             JB.Calendar.IWrapper wrapper = JB.Calendar.Factory.CreateCalendarWrapper();
-            long errorCode = 0;
 
-            Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>>? eventEventsTask = wrapper.GetEvents();
-            eventEventsTask.Wait();
-            if (eventEventsTask.Result.ErrorCode == 0) {
-                JB.Calendar.Interfaces.ICalendarEvent? newEvent = eventEventsTask?.Result?.Data?.Where(x => x.Description == "Test event").FirstOrDefault();
+            Task<JB.Common.IReturnCode<IList<JB.Calendar.Interfaces.ICalendarEvent>>>? getEventsTask = wrapper.GetEvents();
+            getEventsTask.Wait();
+            var getEventsRc = getEventsTask.Result;
+
+
+            if (getEventsRc.Success) {
+                JB.Calendar.Interfaces.ICalendarEvent? newEvent = getEventsTask?.Result?.Data?.Where(x => x.Description == "Test event").FirstOrDefault();
 
                 if (newEvent != null) {
-                    Task<JB.Common.IReturnCode<bool>>? getEventsTask = wrapper.CancelEvent(newEvent.Id, "primary");
-                    getEventsTask.Wait();
-                    errorCode = getEventsTask.Result.ErrorCode;
+                    Task<JB.Common.IReturnCode<bool>>? cancelEventTask = wrapper.CancelEvent(newEvent.Id, "primary");
+                    cancelEventTask.Wait();
+                    var cancelEventRc = cancelEventTask.Result;
+
+                    if (cancelEventRc.Success == false) {
+                        JB.Common.ErrorWorker.CopyErrors(cancelEventRc, rc);
+                    }
                 }
             }
 
             // Assert
-            Assert.That(errorCode, Is.EqualTo(JB.Common.ErrorCodes.SUCCESS));
+            Assert.That(rc.Success, Is.EqualTo(true));
         }
     }
 }

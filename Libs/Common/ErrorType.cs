@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JB.NoSqlDatabase.Cosmos {
-    internal class CosmosWorker {
-        
+namespace JB.Common.Consts {
+    public enum ErrorType {
+        INFORMATION,
+        WARNING,
+        ERROR
     }
 }

@@ -23,15 +23,15 @@ namespace JB.Calendar.GoogleCalendar {
             IList<string> scopes = new List<string>(new string[] { CalendarService.Scope.Calendar });
             IList<Interfaces.ICalendarEvent> calendarEvents = new List<Interfaces.ICalendarEvent>();
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
 
-                if (JB.Common.ErrorCodes.SUCCESS != getCredentialRc.ErrorCode) {
-                    ErrorWorker.CopyErrorCode(getCredentialRc, rc);
+                if (getCredentialRc.Success == false) {
+                    ErrorWorker.CopyErrors(getCredentialRc, rc);
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 try {
                     var service = new CalendarService(new BaseClientService.Initializer() {
                         HttpClientInitializer = userCredential,
@@ -59,13 +59,13 @@ namespace JB.Calendar.GoogleCalendar {
                         }
                     }
                 }
-                catch (Exception e) {
+                catch (Exception ex) {
                     rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_ITEMS;
-                    ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                    rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
                 }
             }
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 rc.Data = calendarEvents;
             }
 
@@ -75,13 +75,11 @@ namespace JB.Calendar.GoogleCalendar {
             IReturnCode<bool> rc = new ReturnCode<bool>();
             IList<string> scopes = new List<string>(new string[] { CalendarService.Scope.CalendarEvents });
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                    IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
+            if (rc.Success) {
+                IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
 
-                    if (JB.Common.ErrorCodes.SUCCESS != getCredentialRc.ErrorCode) {
-                        ErrorWorker.CopyErrorCode(getCredentialRc, rc);
-                    }
+                if (getCredentialRc.Success == false) {
+                    ErrorWorker.CopyErrors(getCredentialRc, rc);
                 }
             }
 
@@ -96,9 +94,9 @@ namespace JB.Calendar.GoogleCalendar {
                 var request = service.Events.Insert(newEvent, pCalenderId);
                 newEvent = await request.ExecuteAsync();
             }
-            catch (Exception e) {
+            catch (Exception ex) {
                 rc.ErrorCode = ErrorCodes.UNABLE_TO_INSERT_NEW_ITEM;
-                ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
             }
 
             return rc;
@@ -107,18 +105,16 @@ namespace JB.Calendar.GoogleCalendar {
             IReturnCode<bool> rc = new ReturnCode<bool>();
             IList<string> scopes = new List<string>();
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                    IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
+            if (rc.Success) {
+                IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
 
-                    if (JB.Common.ErrorCodes.SUCCESS != getCredentialRc.ErrorCode) {
-                        ErrorWorker.CopyErrorCode(getCredentialRc, rc);
-                    }
+                if (getCredentialRc.Success == false) {
+                    ErrorWorker.CopyErrors(getCredentialRc, rc);
                 }
             }
 
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 try {
                     var service = new CalendarService(new BaseClientService.Initializer() {
                         HttpClientInitializer = userCredential,
@@ -130,28 +126,24 @@ namespace JB.Calendar.GoogleCalendar {
                     var request = service.Events.Patch(updatedEvent, pCalendarID, pEvent.Id);
                     updatedEvent = await request.ExecuteAsync();
                 }
-                catch (Exception e) {
+                catch (Exception ex) {
                     rc.ErrorCode = ErrorCodes.UNABLE_TO_UPDATE_ITEM;
-                    ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                    rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
                 }
             }
-
-            
 
             return rc;
         }
 
-        public async Task<JB.Common.IReturnCode<bool>> CancelEvent(string pEventId, string pCalendarId) {
+        public async Task<IReturnCode<bool>> CancelEvent(string pEventId, string pCalendarId) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
             IList<string> scopes = new List<string>();
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
-                    IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
+            if (rc.Success) {
+                IReturnCode<bool> getCredentialRc = await GetUserCredentials(scopes);
 
-                    if (JB.Common.ErrorCodes.SUCCESS != getCredentialRc.ErrorCode) {
-                        ErrorWorker.CopyErrorCode(getCredentialRc, rc);
-                    }
+                if (getCredentialRc.Success == false) {
+                    ErrorWorker.CopyErrors(getCredentialRc, rc);
                 }
             }
 
@@ -164,9 +156,9 @@ namespace JB.Calendar.GoogleCalendar {
                 var request = service.Events.Delete(pCalendarId, pEventId);
                 string response = await request.ExecuteAsync();                
             }
-            catch (Exception e) {
+            catch (Exception ex) {
                 rc.ErrorCode = ErrorCodes.UNABLE_TO_DELETE_ITEM;
-                ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
             }
 
             return rc;
@@ -175,7 +167,7 @@ namespace JB.Calendar.GoogleCalendar {
         protected async Task<IReturnCode<bool>> GetUserCredentials(IList<string> pScopes) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
 
-            if (JB.Common.ErrorCodes.SUCCESS == rc.ErrorCode) {
+            if (rc.Success) {
                 try {
                     string? clientId = Environment.GetEnvironmentVariable("clientId");
                     string? clientSecret = Environment.GetEnvironmentVariable("clientSecret");
@@ -186,12 +178,10 @@ namespace JB.Calendar.GoogleCalendar {
                     };
 
                     userCredential = await GoogleWebAuthorizationBroker.AuthorizeAsync(clientSecrets, pScopes, "user", CancellationToken.None);
-
-                    //await GoogleWebAuthorizationBroker.ReauthorizeAsync(userCredential, CancellationToken.None);
                 }
-                catch (Exception e) {
+                catch (Exception ex) {
                     rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_USER_CREDENTIALS;
-                    ErrorWorker.AddError(rc, rc.ErrorCode, e.Message, e.StackTrace);
+                    rc.Errors.Add(new JB.Common.Error(rc.ErrorCode, ex));
                 }
             }
             
