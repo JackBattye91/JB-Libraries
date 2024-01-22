@@ -20,12 +20,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-
-    - name: .Net Version
-      run: echo 
-
-    - name: Clean
-      run: dotnet clean
     
     - name: Restore dependencies
       run: dotnet restore
@@ -35,3 +29,6 @@ jobs:
 
     - name: Pack
       run: dotnet pack --configuration Debug
+
+    - name: Publish the package to GPR
+      run: dotnet nuget push "bin/Release/*.nupkg"  --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }} --source "github"
