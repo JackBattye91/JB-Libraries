@@ -28,8 +28,4 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.2.0" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y &quot;$(ProjectDir)bin\Debug\*.nupkg&quot; &quot;$(SolutionDir)..\Nuggets&quot;" />
-  </Target>
-
 </Project>
