@@ -11,8 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Calendar\Calendar.csproj" />
     <ProjectReference Include="..\..\Libs\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Libs\NoSqlDatabase\NoSqlDatabase.csproj" />
     <ProjectReference Include="..\..\Libs\SqlDatabase\SqlDatabase.csproj" />
+    <ProjectReference Include="..\..\Libs\Weather\Weather.csproj" />
   </ItemGroup>
 
 </Project>

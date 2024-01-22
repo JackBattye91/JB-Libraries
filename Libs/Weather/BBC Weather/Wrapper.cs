@@ -12,9 +12,9 @@ using JB.Common;
 namespace JB.Weather.BBC_Weather
 {
     internal class Wrapper : IWrapper {
-        public async Task<IReturnCode<IForcast>> GetTodaysForcast(string pAreaCode) {
-            IReturnCode<IForcast> rc = new ReturnCode<IForcast>();
-            Interfaces.IForcast? forcast = null;
+        public async Task<IReturnCode<IForecast>> GetTodaysForecast(string pAreaCode) {
+            IReturnCode<IForecast> rc = new ReturnCode<IForecast>();
+            Interfaces.IForecast? forcast = null;
             string responseText = string.Empty;
             XmlNode? forcastNode = null;
 
@@ -42,18 +42,17 @@ namespace JB.Weather.BBC_Weather
                 }
 
                 if (rc.Success) {
-                    IReturnCode<IForcast> extractForcastRc = Worker.ExtractForcast(forcastNode);
-                    if (extractForcastRc.Success) {
-                        forcast = extractForcastRc.Data;
+                    IReturnCode<IForecast> extractForecastRc = Worker.ExtractForecast(forcastNode);
+                    if (extractForecastRc.Success) {
+                        forcast = extractForecastRc.Data;
                     }
                     else {
-                        ErrorWorker.CopyErrors(extractForcastRc, rc);
+                        ErrorWorker.CopyErrors(extractForecastRc, rc);
                     }
                 }
             }
             catch(Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_TODAYS_FORCAST_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(ErrorCodes.GET_TODAYS_FORCAST_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -63,9 +62,9 @@ namespace JB.Weather.BBC_Weather
             return rc;
         }
 
-        public async Task<IReturnCode<IList<Interfaces.IForcast>>> Get3DayForcast(string pAreaCode) {
-            IReturnCode<IList<IForcast>> rc = new ReturnCode<IList<IForcast>>();
-            IList<IForcast> forcasts = new List<Interfaces.IForcast>();
+        public async Task<IReturnCode<IList<Interfaces.IForecast>>> Get3DayForecast(string pAreaCode) {
+            IReturnCode<IList<IForecast>> rc = new ReturnCode<IList<IForecast>>();
+            IList<IForecast> forcasts = new List<Interfaces.IForecast>();
             string responseText = string.Empty;
 
             try {
@@ -84,13 +83,13 @@ namespace JB.Weather.BBC_Weather
                     XmlDocument xmlDocument = new XmlDocument();
                     xmlDocument.LoadXml(responseText);
 
-                    XmlElement? rssElement = xmlDocument["rss"];
-                    XmlElement? channelElement = rssElement?["channel"];
-                    XmlElement? titleElement = channelElement?["title"];
-                    XmlNodeList? itemNodes = channelElement?.GetElementsByTagName("item");
+                    XmlElement? rssElement = xmlDocument[Consts.XmlTag.RSS];
+                    XmlElement? channelElement = rssElement?[Consts.XmlTag.Channel];
+                    XmlElement? titleElement = channelElement?[Consts.XmlTag.Title];
+                    XmlNodeList? itemNodes = channelElement?.GetElementsByTagName(Consts.XmlTag.Item);
 
                     for (int n = 0; n < itemNodes?.Count; n++) {
-                        IReturnCode<IForcast> extractForcastRc = Worker.ExtractForcast(itemNodes[n]);
+                        IReturnCode<IForecast> extractForcastRc = Worker.ExtractForecast(itemNodes[n]);
                         if (extractForcastRc.Success) {
                             if (extractForcastRc.Data != null) {
                                 forcasts.Add(extractForcastRc.Data);
@@ -103,8 +102,7 @@ namespace JB.Weather.BBC_Weather
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_3DAY_FORCAST_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(ErrorCodes.GET_3DAY_FORCAST_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {

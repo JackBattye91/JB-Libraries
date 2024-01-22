@@ -1,55 +1,70 @@
 ﻿using JB.Common;
 using JB.Weather.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Xml;
+using JB.Common.Utilities;
 
 namespace JB.Weather.BBC_Weather {
     internal class Worker {
-        public static IReturnCode<IForcast> ExtractForcast(XmlNode? pXmlNode) {
-            IReturnCode<IForcast> rc = new ReturnCode<IForcast>();
-            IForcast forcast = new Models.Forcast();
+        public static IReturnCode<IForecast> ExtractForecast(XmlNode? pXmlNode) {
+            IReturnCode<IForecast> rc = new ReturnCode<IForecast>();
+            IForecast forcast = new Models.Forecast();
 
             try {
-                string? description = pXmlNode?["description"]?.InnerText;
-                string[]? geoText = pXmlNode?["georss:point"]?.InnerText?.Split(" ");
-                IDictionary<string, string> descriptionDetails = ExtractDescriptionDetails(description);
+                string? title = pXmlNode?[Consts.ItemTag.Title]?.InnerText;
+                string? description = pXmlNode?[Consts.ItemTag.Description]?.InnerText;
+                string? geoText = pXmlNode?[Consts.ItemTag.GeoPos]?.InnerText;
+                IDictionary<string, string> titleDetails = ExtractDetails(title);
+                IDictionary<string, string> descriptionDetails = ExtractDetails(description);
 
-                if (geoText != null) {
+                forcast.Day = titleDetails.Keys.ElementAt(0).PascalCase();
+                forcast.Date = DateTime.Parse(pXmlNode?[Consts.ItemTag.Date]?.InnerText ?? "");
+                forcast.Description = titleDetails.Values.ElementAt(0);
+                forcast.GpsLocation = ExtractGpsCoordinate(geoText);
 
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.MaxTemp)) {
+                    var temps = ExtractTemperatures(descriptionDetails[Consts.ItemDescriptionDetail.MaxTemp]);
+
+                    forcast.MaximumTemperatureCelsius = temps[Weather.Consts.Temperature.Celsius];
+                    forcast.MaximumTemperatureFahrenheit = temps[Weather.Consts.Temperature.Fahrenheit];
                 }
 
-                forcast.Title = pXmlNode?["title"]?.InnerText ?? "";
-                forcast.Date = DateTime.Parse(pXmlNode?["dc:date"]?.InnerText ?? "");
-                forcast.Description = description;
-                forcast.Location = pXmlNode?["description"]?.InnerText;
-                forcast.GpsLocation = null;
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.MinTemp)) {
+                    var temps = ExtractTemperatures(descriptionDetails[Consts.ItemDescriptionDetail.MinTemp]);
 
-                if (descriptionDetails.ContainsKey("temperature")) {
-                    var temps = ExtractTemperatures(descriptionDetails["temperature"]);
-
-                    forcast.TemeratureCelsius = temps["celsius"];
-                    forcast.TemeratureFahrenheit = temps["fahrenheit"];
+                    forcast.MinimumTemperatureCelsius = temps[Weather.Consts.Temperature.Celsius];
+                    forcast.MinimumTemperatureFahrenheit = temps[Weather.Consts.Temperature.Fahrenheit];
                 }
 
-                if (descriptionDetails.ContainsKey("wind speed")) {
-                    forcast.WindSpeedMph = 0;// descriptionDetails["Wind Speed"];
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.WindSpeed)) {
+                    forcast.WindSpeedMph = ExtractWindSpeedMph(descriptionDetails[Consts.ItemDescriptionDetail.WindSpeed]);
                 }
 
-                if (descriptionDetails.ContainsKey("wind direction")) {
-                    forcast.WindDirection = descriptionDetails["wind direction"];
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.WindDirection)) {
+                    forcast.WindDirection = descriptionDetails[Consts.ItemDescriptionDetail.WindDirection];
                 }
 
-                forcast.Humidity = 0;
-                forcast.PressureMb = 0;
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.Humidity)) {
+                    forcast.Humidity = ExtractHumidity(descriptionDetails[Consts.ItemDescriptionDetail.Humidity]);
+                }
+
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.Pressure)) {
+                    forcast.PressureMb = ExtractPressure(descriptionDetails[Consts.ItemDescriptionDetail.Pressure]);
+                }
+
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.Pollution)) {
+                    forcast.Pollution = descriptionDetails[Consts.ItemDescriptionDetail.Pollution];
+                }
+
+                if (descriptionDetails.ContainsKey(Consts.ItemDescriptionDetail.UvRisk)) {
+                    if (int.TryParse(descriptionDetails[Consts.ItemDescriptionDetail.UvRisk], out int uvRisk)) {
+                        forcast.UvRisk = uvRisk;
+                    }
+                }
+
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.EXTRACT_FORCAST_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, System.Net.HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(ErrorCodes.EXTRACT_FORCAST_FAILED, System.Net.HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -77,9 +92,9 @@ namespace JB.Weather.BBC_Weather {
             return coordinate;
         }
 
-        public static IDictionary<string, string> ExtractDescriptionDetails(string? pDescription) {
+        public static IDictionary<string, string> ExtractDetails(string? pDetailsText) {
             IDictionary<string, string> details = new Dictionary<string, string>();
-            string[]? parts = pDescription?.Split(',');
+            string[]? parts = pDetailsText?.Split(',');
 
             if (parts != null) {
                 foreach (string part in parts) {
@@ -92,24 +107,67 @@ namespace JB.Weather.BBC_Weather {
         }
         public static IDictionary<string, float> ExtractTemperatures(string? pDescription) {
             IDictionary<string, float> temperatures = new Dictionary<string, float>();
-            string[]? parts = pDescription?.Split(" ");
+            Regex regex = new Regex("(?(?=[0-9]+°C)(?'cel'[0-9]+)(°C)|'')[ ]*\\((?(?=[0-9]+°F)(?'fah'[0-9]+)(°F)|'')\\)");
 
-            if (parts != null) {
-                foreach (string part in parts) {
-                    if (part.ToUpper().Contains("C")) {
-                        if (float.TryParse(part, out float value)) {
-                            temperatures.Add("celsius", value);
-                        }
-                    }
-                    else if (part.ToUpper().Contains("F")) {
-                        if (float.TryParse(part, out float value)) {
-                            temperatures.Add("fahrenheit", value);
-                        }
-                    }
-                }
+            Match tempsMatch = regex.Match(pDescription ?? "");
+
+            Group? celciusGroup = tempsMatch.Groups.ContainsKey("cel") ? tempsMatch.Groups["cel"] : null;
+            Group? fahrenheitGroup = tempsMatch.Groups.ContainsKey("fah") ? tempsMatch.Groups["fah"] : null;
+
+            if (celciusGroup != null) {
+                temperatures.Add(Weather.Consts.Temperature.Celsius, float.Parse(celciusGroup.Value));
+            }
+
+            if (fahrenheitGroup != null) {
+                temperatures.Add(Weather.Consts.Temperature.Fahrenheit, float.Parse(fahrenheitGroup.Value));
             }
 
             return temperatures;
+        }
+        public static int? ExtractPressure(string? pPressure) {
+            int? pressure = null;
+            Regex regex = new Regex("(?(?=[0-9]+[MmBb])(?'pressure'[0-9]+)([MmBb]{2})|'')");
+
+            Match pressureMatch = regex.Match(pPressure ?? "");
+            Group? pressureGroup = pressureMatch.Groups.ContainsKey("pressure") ? pressureMatch.Groups["pressure"] : null;
+
+            if (pressureGroup != null) {
+                if (int.TryParse(pressureGroup.Value, out int pres)) {
+                    pressure = pres;
+                }
+            }
+
+            return pressure;
+        }
+        public static int? ExtractHumidity(string? pHumidity) {
+            int? humidity = null;
+            Regex regex = new Regex("(?(?=[0-9]+[\\%])(?'humidity'[0-9]+)([\\%])|'')");
+
+            Match humidityMatch = regex.Match(pHumidity ?? "");
+            Group? humidityGroup = humidityMatch.Groups.ContainsKey("humidity") ? humidityMatch.Groups["humidity"] : null;
+
+            if (humidityGroup != null) {
+                if (int.TryParse(humidityGroup.Value, out int hum)) {
+                    humidity = hum;
+                }
+            }
+
+            return humidity;
+        }
+        public static int? ExtractWindSpeedMph(string? pWindSpeed) {
+            int? windSpeedMph = null;
+            Regex regex = new Regex("(?(?=[0-9]+(mph))(?'windspeed'[0-9]+)(mph)|'')");
+
+            Match windSpeedMatch = regex.Match(pWindSpeed ?? "");
+            Group? windSpeedGroup = windSpeedMatch.Groups.ContainsKey("windspeed") ? windSpeedMatch.Groups["windspeed"] : null;
+
+            if (windSpeedGroup != null) {
+                if (int.TryParse(windSpeedGroup.Value, out int speed)) {
+                    windSpeedMph = speed;
+                }
+            }
+
+            return windSpeedMph;
         }
     }
 }
