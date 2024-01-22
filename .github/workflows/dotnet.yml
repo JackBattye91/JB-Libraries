@@ -20,12 +20,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-
-    - name: .Net Version
-      run: echo 
-
-    - name: Clean
-      run: dotnet clean
     
     - name: Restore dependencies
       run: dotnet restore
@@ -34,7 +28,7 @@ jobs:
       run: dotnet build --configuration Debug
 
     - name: Pack
-      run: dotnet pack --configuration Debug
+      run: dotnet pack
 
     - name: Publish the package to GPR
-      run: dotnet nuget push JB-Library/bin/Release/*.nupkg
+      run: dotnet nuget push https://github.com/JackBattye91/JB-Libraries/bin/Release/*.nupkg
