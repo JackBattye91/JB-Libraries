@@ -28,7 +28,7 @@ jobs:
       run: dotnet build --configuration Debug
 
     - name: Pack
-      run: dotnet pack
+      run: dotnet pack --configuration Debug
 
     - name: Publish the package to GPR
       run: dotnet nuget push https://github.com/JackBattye91/JB-Libraries/bin/Release/*.nupkg
