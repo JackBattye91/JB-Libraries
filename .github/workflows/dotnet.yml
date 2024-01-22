@@ -29,3 +29,6 @@ jobs:
       
     - name: Build
       run: dotnet build --configuration Debug
+
+    - name: Pack
+      run: dotnet pack --configuration Debug
