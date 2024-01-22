@@ -5,7 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "Development" ]
+    branches:
+      - "Trunk"
+      - "Development"
 
 jobs:
   build:
@@ -24,3 +26,6 @@ jobs:
       
     - name: Build
       run: dotnet build --no-restore
+
+    - name: Package
+      run: dotnet pack --no-restore
