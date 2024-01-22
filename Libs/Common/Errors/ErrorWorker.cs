@@ -20,7 +20,6 @@ namespace JB.Common {
 
         public static void CopyErrors(IReturnCode? pSource, IReturnCode? pDestination) {
             if (pSource != null && pDestination != null) {
-                pDestination.ErrorCode = pSource.ErrorCode;
                 foreach (IError srcCodes in pSource.Errors) {
                     pDestination?.AddError(srcCodes);
                 }
