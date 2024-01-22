@@ -27,6 +27,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlDatabase.Tests", "Tests\
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Common .Net8.0|Any CPU = Common .Net8.0|Any CPU
+		Common .Net8.0|x64 = Common .Net8.0|x64
+		Common .Net8.0|x86 = Common .Net8.0|x86
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
@@ -35,6 +38,12 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Common .Net8.0|Any CPU.ActiveCfg = Common .Net8.0|Any CPU
+		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Common .Net8.0|Any CPU.Build.0 = Common .Net8.0|Any CPU
+		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Common .Net8.0|x64.ActiveCfg = Common .Net8.0|Any CPU
+		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Common .Net8.0|x64.Build.0 = Common .Net8.0|Any CPU
+		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Common .Net8.0|x86.ActiveCfg = Common .Net8.0|Any CPU
+		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Common .Net8.0|x86.Build.0 = Common .Net8.0|Any CPU
 		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -47,6 +56,12 @@ Global
 		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Release|x64.Build.0 = Release|Any CPU
 		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Release|x86.ActiveCfg = Release|Any CPU
 		{D4F170F9-62E2-4F06-98A7-4F1F0463967C}.Release|x86.Build.0 = Release|Any CPU
+		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Common .Net8.0|Any CPU.ActiveCfg = Common .Net8.0|Any CPU
+		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Common .Net8.0|Any CPU.Build.0 = Common .Net8.0|Any CPU
+		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Common .Net8.0|x64.ActiveCfg = Common .Net8.0|Any CPU
+		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Common .Net8.0|x64.Build.0 = Common .Net8.0|Any CPU
+		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Common .Net8.0|x86.ActiveCfg = Common .Net8.0|Any CPU
+		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Common .Net8.0|x86.Build.0 = Common .Net8.0|Any CPU
 		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -59,6 +74,12 @@ Global
 		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Release|x64.Build.0 = Release|Any CPU
 		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A826240-8272-46F8-B6C0-8F4F66C3E46A}.Release|x86.Build.0 = Release|Any CPU
+		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Common .Net8.0|Any CPU.ActiveCfg = Common .Net8.0|Any CPU
+		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Common .Net8.0|Any CPU.Build.0 = Common .Net8.0|Any CPU
+		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Common .Net8.0|x64.ActiveCfg = Common .Net8.0|Any CPU
+		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Common .Net8.0|x64.Build.0 = Common .Net8.0|Any CPU
+		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Common .Net8.0|x86.ActiveCfg = Common .Net8.0|Any CPU
+		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Common .Net8.0|x86.Build.0 = Common .Net8.0|Any CPU
 		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6C0BA00-D856-4474-9BDF-73CF4510983B}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -83,6 +104,12 @@ Global
 		{B4FF41EB-365E-4893-B34B-368AFCB203F4}.Release|x64.Build.0 = Release|Any CPU
 		{B4FF41EB-365E-4893-B34B-368AFCB203F4}.Release|x86.ActiveCfg = Release|Any CPU
 		{B4FF41EB-365E-4893-B34B-368AFCB203F4}.Release|x86.Build.0 = Release|Any CPU
+		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Common .Net8.0|Any CPU.ActiveCfg = Common .Net8.0|Any CPU
+		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Common .Net8.0|Any CPU.Build.0 = Common .Net8.0|Any CPU
+		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Common .Net8.0|x64.ActiveCfg = Common .Net8.0|Any CPU
+		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Common .Net8.0|x64.Build.0 = Common .Net8.0|Any CPU
+		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Common .Net8.0|x86.ActiveCfg = Common .Net8.0|Any CPU
+		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Common .Net8.0|x86.Build.0 = Common .Net8.0|Any CPU
 		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -95,6 +122,12 @@ Global
 		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Release|x64.Build.0 = Release|Any CPU
 		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Release|x86.ActiveCfg = Release|Any CPU
 		{87686BDB-FA8A-432B-A66E-F211FE8A236E}.Release|x86.Build.0 = Release|Any CPU
+		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Common .Net8.0|Any CPU.ActiveCfg = Common .Net8.0|Any CPU
+		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Common .Net8.0|Any CPU.Build.0 = Common .Net8.0|Any CPU
+		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Common .Net8.0|x64.ActiveCfg = Common .Net8.0|Any CPU
+		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Common .Net8.0|x64.Build.0 = Common .Net8.0|Any CPU
+		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Common .Net8.0|x86.ActiveCfg = Common .Net8.0|Any CPU
+		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Common .Net8.0|x86.Build.0 = Common .Net8.0|Any CPU
 		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -107,6 +140,12 @@ Global
 		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Release|x64.Build.0 = Release|Any CPU
 		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Release|x86.ActiveCfg = Release|Any CPU
 		{F6811772-BDCC-48D9-AFC4-1B9778EA71AE}.Release|x86.Build.0 = Release|Any CPU
+		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Common .Net8.0|Any CPU.ActiveCfg = Common .Net8.0|Any CPU
+		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Common .Net8.0|Any CPU.Build.0 = Common .Net8.0|Any CPU
+		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Common .Net8.0|x64.ActiveCfg = Common .Net8.0|Any CPU
+		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Common .Net8.0|x64.Build.0 = Common .Net8.0|Any CPU
+		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Common .Net8.0|x86.ActiveCfg = Common .Net8.0|Any CPU
+		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Common .Net8.0|x86.Build.0 = Common .Net8.0|Any CPU
 		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -119,6 +158,12 @@ Global
 		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Release|x64.Build.0 = Release|Any CPU
 		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Release|x86.ActiveCfg = Release|Any CPU
 		{1D060120-574A-4D5F-A750-5CB880D3CC31}.Release|x86.Build.0 = Release|Any CPU
+		{5762447B-E030-4557-AF9A-4A1508D65B06}.Common .Net8.0|Any CPU.ActiveCfg = Release|Any CPU
+		{5762447B-E030-4557-AF9A-4A1508D65B06}.Common .Net8.0|Any CPU.Build.0 = Release|Any CPU
+		{5762447B-E030-4557-AF9A-4A1508D65B06}.Common .Net8.0|x64.ActiveCfg = Release|Any CPU
+		{5762447B-E030-4557-AF9A-4A1508D65B06}.Common .Net8.0|x64.Build.0 = Release|Any CPU
+		{5762447B-E030-4557-AF9A-4A1508D65B06}.Common .Net8.0|x86.ActiveCfg = Release|Any CPU
+		{5762447B-E030-4557-AF9A-4A1508D65B06}.Common .Net8.0|x86.Build.0 = Release|Any CPU
 		{5762447B-E030-4557-AF9A-4A1508D65B06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5762447B-E030-4557-AF9A-4A1508D65B06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5762447B-E030-4557-AF9A-4A1508D65B06}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -131,6 +176,12 @@ Global
 		{5762447B-E030-4557-AF9A-4A1508D65B06}.Release|x64.Build.0 = Release|Any CPU
 		{5762447B-E030-4557-AF9A-4A1508D65B06}.Release|x86.ActiveCfg = Release|Any CPU
 		{5762447B-E030-4557-AF9A-4A1508D65B06}.Release|x86.Build.0 = Release|Any CPU
+		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Common .Net8.0|Any CPU.ActiveCfg = Common .Net8.0|Any CPU
+		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Common .Net8.0|Any CPU.Build.0 = Common .Net8.0|Any CPU
+		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Common .Net8.0|x64.ActiveCfg = Common .Net8.0|Any CPU
+		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Common .Net8.0|x64.Build.0 = Common .Net8.0|Any CPU
+		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Common .Net8.0|x86.ActiveCfg = Common .Net8.0|Any CPU
+		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Common .Net8.0|x86.Build.0 = Common .Net8.0|Any CPU
 		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}.Debug|x64.ActiveCfg = Debug|Any CPU
