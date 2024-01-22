@@ -31,4 +31,4 @@ jobs:
       run: dotnet pack --configuration Debug
 
     - name: Publish the package to GPR
-      run: dotnet nuget push https://github.com/JackBattye91/JB-Libraries/bin/Release/*.nupkg
+      run: dotnet nuget push "bin/Release/*.nupkg"  --api-key "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" --source "github"
