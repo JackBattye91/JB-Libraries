@@ -21,8 +21,7 @@ namespace JB {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = 7;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(7, ex));
             }
 
             if (rc.Failed) {
