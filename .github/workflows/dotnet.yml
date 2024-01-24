@@ -32,7 +32,7 @@ jobs:
         token: ${{ secrets.NUGET_PACKAGE_TOKEN }}
       
     - name: Pack
-      run: dotnet pack --no-restore --configuration Release -p:PackageVersion=1.0.${{ env.PACKAGE_VERSION }}
+      run: dotnet pack --no-restore --configuration Release -p:PackageVersion=1.0.${{ PACKAGE_VERSION }}
 
     - name: Publish the package to GPR
       run: dotnet nuget push "Libs/*/bin/Release/*.nupkg"  --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }} --source "github" --skip-duplicate
