@@ -93,7 +93,7 @@ namespace JB.Common.Utilities
 
                 if (rc.Success)
                 {
-                    SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(encryptionKey));
+                    SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(pSecurityKey));
 
                     TokenValidationParameters validationParameters = new TokenValidationParameters();
                     validationParameters.ValidIssuer = pIssuer;
