@@ -38,4 +38,4 @@ jobs:
       run: dotnet pack --no-restore --configuration Release -p:PackageVersion="1.0.${{ vars.PACKAGE_VERSION }}"
 
     - name: Publish the package to GPR
-      run: dotnet nuget push "Libs/*/bin/Release/*.nupkg"  --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }} --source "github" --skip-duplicate
+      run: dotnet nuget push "Libs/*/bin/Release/*.1.0.${{ vars.PACKAGE_VERSION }}.nupkg"  --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }} --source "github" --skip-duplicate
