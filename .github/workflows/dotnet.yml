@@ -9,9 +9,6 @@ on:
   push:
     branches: 
       - "Trunk"
-  workflow_run:
-    workflows:
-      - requested
       
 jobs:
   build:
