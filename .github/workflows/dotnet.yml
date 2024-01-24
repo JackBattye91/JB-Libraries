@@ -16,9 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Update Version Number
-      run: echo "$PACKAGE_VERSION"
-      
     - uses: actions/checkout@v3
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
