@@ -27,6 +27,14 @@ jobs:
     
     - name: Restore dependencies
       run: dotnet restore
+
+    - name: Regex Replace
+      uses: ashley-taylor/regex-property-action@v1.4
+      with:
+        # The text of the regex pattern
+        regex: "<Version>(?'version'[0-9.]+)<\/Version>"
+        # String that replaces the substring specified by the regex
+        replacement: "<Version>1.0.$PACKAGE_VERSION</Version>"
       
     - name: Build
       run: dotnet build --no-restore --configuration Release
