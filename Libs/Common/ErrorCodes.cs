@@ -15,5 +15,7 @@ namespace JB.Common {
         public const int VALIDATE_TOKEN_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 4;
         public const int CONVERT_TO_BASE_64_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 5;
         public const int CONVERT_FROM_BASE_64_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 6;
+        public const int INVALID_JWT_ISSUER = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 7;
+        public const int INVALID_JWT_SECURITY_KEY = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 8;
     }
 }
