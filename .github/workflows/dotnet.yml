@@ -10,7 +10,8 @@ on:
     branches: 
       - "Trunk"
   workflow_run:
-      
+    workflows:
+      - run
 jobs:
   build:
   
