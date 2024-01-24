@@ -9,7 +9,8 @@ on:
   push:
     branches: 
       - "Trunk"
-
+  workflow_run:
+      
 jobs:
   build:
   
