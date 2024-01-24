@@ -14,25 +14,28 @@ namespace JB.Common.Utilities
         /// <param name="pTokenBody"></param>
         /// <param name="pTokenLifespanSeconds"></param>
         /// <returns></returns>
-        public static IReturnCode<string> GenerateToken(IDictionary<string, string> pTokenBody, long pTokenLifespanSeconds = 3600)
+        public static IReturnCode<string> GenerateToken(IDictionary<string, string> pTokenBody, string pIssuer, string pSecurityKey, string? pAudience = null, long pTokenLifespanSeconds = 3600)
         {
             IReturnCode<string> rc = new ReturnCode<string>();
             string? token = null;
 
             try
             {
-                string? encryptionKey = Environment.GetEnvironmentVariable("JwtSecurityKey");
-                string? issuer = Environment.GetEnvironmentVariable("JwtIssuer");
-                string? audience = Environment.GetEnvironmentVariable("JwtAudience");
-
-                if (encryptionKey == null || issuer == null || audience == null)
+                if (rc.Success)
                 {
-                    throw new Exception("Unable to get JWT details");
+                    if (string.IsNullOrEmpty(pIssuer)) {
+                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_ISSUER));
+                    }
+
+                    if (string.IsNullOrEmpty(pSecurityKey))
+                    {
+                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_SECURITY_KEY));
+                    }
                 }
 
                 if (rc.Success)
                 {
-                    SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(encryptionKey));
+                    SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(pSecurityKey));
                     SigningCredentials signedCreds = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha512);
 
                     IList<Claim> claims = new List<Claim>();
@@ -44,8 +47,8 @@ namespace JB.Common.Utilities
 
                     JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
                     JwtSecurityToken jwt = tokenHandler.CreateJwtSecurityToken(
-                        issuer,
-                        audience,
+                        pIssuer,
+                        pAudience,
                         new ClaimsIdentity(claims),
                         DateTime.UtcNow,
                         DateTime.UtcNow.AddSeconds(pTokenLifespanSeconds),
@@ -68,31 +71,45 @@ namespace JB.Common.Utilities
 
             return rc;
         }
-        public static IReturnCode<bool> ValidateToken(string pToken)
+        public static IReturnCode<bool> ValidateToken(string pToken, string pIssuer, string pSecurityKey, string? pAudience = null)
         {
             IReturnCode<bool> rc = new ReturnCode<bool>();
 
             try
             {
-                string? encryptionKey = Environment.GetEnvironmentVariable("JwtSecurityKey");
-                string? issuer = Environment.GetEnvironmentVariable("JwtIssuer");
-                string? audience = Environment.GetEnvironmentVariable("JwtAudience");
 
-                if (encryptionKey == null || issuer == null || audience == null)
+                if (rc.Success)
                 {
-                    throw new Exception("Unable to JWT details");
+                    if (string.IsNullOrEmpty(pIssuer))
+                    {
+                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_ISSUER));
+                    }
+
+                    if (string.IsNullOrEmpty(pSecurityKey))
+                    {
+                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_SECURITY_KEY));
+                    }
                 }
 
-                SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(encryptionKey));
+                if (rc.Success)
+                {
+                    SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(encryptionKey));
 
-                TokenValidationParameters validationParameters = new TokenValidationParameters();
-                validationParameters.ValidIssuer = issuer;
-                validationParameters.ValidAudience = audience;
-                validationParameters.IssuerSigningKey = securityKey;
-                validationParameters.ValidateLifetime = true;
+                    TokenValidationParameters validationParameters = new TokenValidationParameters();
+                    validationParameters.ValidIssuer = pIssuer;
+                    validationParameters.IssuerSigningKey = securityKey;
+                    validationParameters.ValidateLifetime = true;
+                    validationParameters.ValidateIssuer = true;
 
-                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-                tokenHandler.ValidateToken(pToken, validationParameters, out SecurityToken validToken);
+                    if (!string.IsNullOrEmpty(pAudience))
+                    {
+                        validationParameters.ValidateAudience = true;
+                        validationParameters.ValidAudience = pAudience;
+                    }
+
+                    JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+                    tokenHandler.ValidateToken(pToken, validationParameters, out SecurityToken validToken);
+                }
             }
             catch (Exception ex)
             {
