@@ -11,7 +11,8 @@ on:
       - "Trunk"
   workflow_run:
     workflows:
-      - run
+      - requested
+      
 jobs:
   build:
   
