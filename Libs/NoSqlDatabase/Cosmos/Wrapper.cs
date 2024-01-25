@@ -11,28 +11,28 @@ namespace JB.NoSqlDatabase.Cosmos {
     internal class Wrapper : JB.NoSqlDatabase.IWrapper {
         protected CosmosClient? cosmosClient;
 
-        public Wrapper() {
-            cosmosClient = null;
+        public Wrapper(string? pConnectionString)
+        {
+            Connect(pConnectionString, true);
         }
 
-        public async Task<IReturnCode<bool>> CreateDatabase(string pDatabaseId) {
+        public async Task<IReturnCode> CreateDatabase(string pDatabaseId)
+        {
             IReturnCode<bool> rc = new ReturnCode<bool>();
-            
-            try {
-                string? connectionString = Environment.GetEnvironmentVariable("cosmos-connection-string");
-                cosmosClient = new CosmosClient(connectionString);
-                DatabaseResponse response = await cosmosClient.CreateDatabaseIfNotExistsAsync(pDatabaseId);
-                
-                if (System.Net.HttpStatusCode.OK != response.StatusCode) {
-                    rc.AddError(new NetworkError(ErrorCodes.BAD_STATUS_CODE_FROM_CREATE_DATABASE, response.StatusCode));
+
+            if (rc.Success)
+            {
+                IReturnCode<Database> createDbRc = await GetCosmosDatabase(null, pDatabaseId);
+
+                if (createDbRc.Failed)
+                {
+                    ErrorWorker.CopyErrors(createDbRc, rc);
                 }
-            }
-            catch (Exception ex) {
-                rc.AddError(new NetworkError(ErrorCodes.CREATE_DATABASE_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
             return rc;
         }
+
         public async Task<IReturnCode<Interfaces.IContainer>> GetContainer(string pDatabaseId, string pContainerId) {
             IReturnCode<Interfaces.IContainer> rc = new ReturnCode<Interfaces.IContainer>();
             Container? cosmosContainer = null;
@@ -429,8 +429,8 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<bool>> DeleteItem<Tmodel>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
-            IReturnCode<bool> rc = new ReturnCode<bool>();
+        public async Task<IReturnCode> DeleteItem<Tmodel>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
+            IReturnCode rc = new ReturnCode();
             Container? container = null;
 
             try {
@@ -462,27 +462,73 @@ namespace JB.NoSqlDatabase.Cosmos {
             return rc;
         }
 
-        protected async Task<IReturnCode<Database>> GetCosmosDatabase(string pDatabaseId) {
-            IReturnCode<Database> rc = new ReturnCode<Database>();
-            string? connectionString = Environment.GetEnvironmentVariable("cosmos-connection-string");
-            Database? database = null;
+        protected IReturnCode Connect(string? pConnectionString = null, bool pForceReconnect = false)
+        {
+            IReturnCode rc = new ReturnCode();
 
-            try {
-                cosmosClient = new CosmosClient(connectionString);
-                DatabaseResponse response = await cosmosClient.CreateDatabaseIfNotExistsAsync(pDatabaseId);
-                
-                if (System.Net.HttpStatusCode.OK == response.StatusCode) {
-                    database = response.Database;
+            try
+            {
+                if (rc.Success)
+                {
+                    if (string.IsNullOrEmpty(pConnectionString))
+                    {
+                        pConnectionString = Environment.GetEnvironmentVariable("cosmos-connection-string");
+                    }
                 }
-                else if (System.Net.HttpStatusCode.OK != response.StatusCode) {
-                    rc.AddError(new NetworkError(ErrorCodes.BAD_STATUS_CODE_FROM_GET_COSMOS_DATABASE, response.StatusCode));
+                
+                if (rc.Success)
+                {
+                    if (cosmosClient == null || pForceReconnect)
+                    {
+                        cosmosClient = new CosmosClient(pConnectionString);
+                    }
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
+                rc.AddError(new Error(ErrorCodes.GET_COSMOS_CONNECTION_FAILED, ex));
+            }
+
+            return rc;
+        }
+        protected async Task<IReturnCode<Database>> GetCosmosDatabase(string? pConnectionString, string pDatabaseId)
+        {
+            IReturnCode<Database> rc = new ReturnCode<Database>();
+            Database? database = null;
+
+            try
+            {
+                if (rc.Success)
+                {
+                    IReturnCode connectRc = Connect(pConnectionString);
+
+                    if (connectRc.Failed)
+                    {
+                        ErrorWorker.CopyErrors(connectRc, rc);
+                    }
+                }
+
+                if (rc.Success)
+                {
+                    DatabaseResponse response = await cosmosClient!.CreateDatabaseIfNotExistsAsync(pDatabaseId);
+
+                    if (System.Net.HttpStatusCode.OK == response.StatusCode)
+                    {
+                        database = response.Database;
+                    }
+                    else if (System.Net.HttpStatusCode.OK != response.StatusCode)
+                    {
+                        rc.AddError(new NetworkError(ErrorCodes.BAD_STATUS_CODE_FROM_GET_COSMOS_DATABASE, response.StatusCode));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
                 rc.AddError(new NetworkError(ErrorCodes.GET_COSMOS_DATABASE_FAILED, HttpStatusCode.InternalServerError, ex));
             }
 
-            if (rc.Success) {
+            if (rc.Success)
+            {
                 rc.Data = database;
             }
 
@@ -495,7 +541,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             try {
                 if (rc.Success) {
-                    var databaseRc = await GetCosmosDatabase(pDatabaseId);
+                    var databaseRc = await GetCosmosDatabase(null, pDatabaseId);
 
                     if (databaseRc.Success) {
                         database = databaseRc.Data;
