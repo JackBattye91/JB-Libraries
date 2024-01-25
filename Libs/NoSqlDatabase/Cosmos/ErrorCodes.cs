@@ -29,5 +29,6 @@ namespace JB.NoSqlDatabase.Cosmos {
         public const int GET_COSMOS_DATABASE_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 17;
         public const int BAD_STATUS_CODE_FROM_GET_COSMOS_DATABASE = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 18;
         public const int GET_COSMOS_CONTAINER_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 19;
+        public const int GET_COSMOS_CONNECTION_FAILED = (SCOPE * JB.Common.ErrorCodes.SCOPE_OFFSET) + 20;
     }
 }
