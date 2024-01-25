@@ -80,7 +80,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
 
                 if (rc.Success) {
-                    IReturnCode<Database> getDatabaseRc = await GetCosmosDatabase(pDataBaseId);
+                    IReturnCode<Database> getDatabaseRc = await GetCosmosDatabase(null, pDataBaseId);
 
                     if (getDatabaseRc.Success) {
                         database = getDatabaseRc?.Data;
