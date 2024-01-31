@@ -38,4 +38,4 @@ jobs:
       run: dotnet pack --no-build --configuration Debug -p:PackageVersion="1.0.${{ vars.PACKAGE_VERSION }}-alpha${{ vars.DEV_PACKAGE_VERSION }}"
 
     - name: Publish the package to GPR
-      run: dotnet nuget push "Libs/*/bin/Debug/*1.0.${{ vars.PACKAGE_VERSION }}-alpha${{ vars.DEV_PACKAGE_VERSION }}.nupkg"  --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }} --source "github" --skip-duplicate
+      run: dotnet nuget push "*/bin/Debug/*1.0.${{ vars.PACKAGE_VERSION }}-alpha${{ vars.DEV_PACKAGE_VERSION }}.nupkg"  --api-key ${{ secrets.NUGET_PACKAGE_TOKEN }} --source "github" --skip-duplicate
