@@ -23,8 +23,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_DATABASE_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
             }
 
             return Task.FromResult(rc);
@@ -38,8 +37,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -52,8 +50,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_TABLE_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.CREATE_TABLE_FAILED, ex));
             }
 
             return rc;
@@ -67,8 +64,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -80,8 +76,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.DELETE_TABLE_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.DELETE_TABLE_FAILED, ex));
             }
 
             return rc;
@@ -98,8 +93,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -112,8 +106,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch(Exception ex) {
-                rc.ErrorCode = ErrorCodes.RUN_QUERY_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.RUN_QUERY_FAILED, ex));
             }
 
             if (rc.Success) {
@@ -137,8 +130,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -158,8 +150,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.GET_DATA_FAILED, ex));
             }
 
             if (rc.Success) {
@@ -178,8 +169,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -199,8 +189,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.GET_DATA_FAILED, ex));
             }
 
             if (rc.Success) {
@@ -218,8 +207,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -235,8 +223,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.INSERT_DATA_FAILED, ex));
             }
 
             if (rc.Success) {
@@ -257,8 +244,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -326,16 +312,13 @@ namespace JB.SqlDatabase.SQlite {
 
                     dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
 
-
                     if (dataReader.RowsAffected() == 0) {
-                        rc.ErrorCode = ErrorCodes.NO_ROWS_AFFECTED;
-                        rc.Errors.Add(new Error(rc.ErrorCode, new Exception("No rows affected")));
+                        rc.AddError(new Error(ErrorCodes.NO_ROWS_AFFECTED, new Exception("No rows affected")));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.INSERT_DATA_FAILED, ex));
             }
 
             if (rc.Success) {
@@ -353,8 +336,7 @@ namespace JB.SqlDatabase.SQlite {
                     await connection.OpenAsync();
 
                     if (connection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -367,16 +349,19 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.INSERT_DATA_FAILED, ex));
             }
 
             return rc;
         }
 
 
-        protected static SqliteConnection CreateConnection(string pDatabaseName) {
-            return new SqliteConnection($"Data Source={pDatabaseName}");
+        protected static SqliteConnection CreateConnection(string pDatabaseName, string pVersion = "3") {
+            if (!File.Exists(pDatabaseName)) {
+                throw new Exception("Database file does not exist");
+            }
+
+            return new SqliteConnection($"Data Source={pDatabaseName}; Version={pVersion}");
         }
         protected static async Task<IReturnCode<bool>> CreateTable(SqliteConnection pConnection, string pTableName, Type pObjectType) {
             IReturnCode<bool> rc = new ReturnCode<bool>();
@@ -385,8 +370,7 @@ namespace JB.SqlDatabase.SQlite {
             try {
                 if (rc.Success) {
                     if (pConnection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -451,8 +435,7 @@ namespace JB.SqlDatabase.SQlite {
                                 }
                             }
                             else {
-                                rc.ErrorCode = ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
-                                rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Table name missing from table attribute")));
+                                rc.AddError(new Error(ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE, new Exception("Table name missing from table attribute")));
                             }
                         }
                     }
@@ -468,8 +451,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_TABLE_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.CREATE_TABLE_FAILED, ex));
             }
 
             return rc;
@@ -483,8 +465,7 @@ namespace JB.SqlDatabase.SQlite {
             try {
                 if (rc.Success) {
                     if (pConnection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -519,8 +500,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.GET_DATA_FAILED, ex));
             }
 
             if (rc.Success) {
@@ -538,8 +518,7 @@ namespace JB.SqlDatabase.SQlite {
             try {
                 if (rc.Success) {
                     if (pConnection.State != ConnectionState.Open) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_OPEN_DATA_BASE;
-                        rc.Errors.Add(new Error(rc.ErrorCode));
+                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_DATA_BASE));
                     }
                 }
 
@@ -598,15 +577,11 @@ namespace JB.SqlDatabase.SQlite {
                             string? tableName = tableAttribute?.NamedArguments[0].TypedValue.Value as string;
                             string? columnName = tableAttribute?.NamedArguments[1].TypedValue.Value as string;
 
-
-
                             if (tableName == null) {
-                                rc.ErrorCode = ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
-                                rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Table name missing from table attributes")));
+                                rc.AddError(new Error(ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE, new Exception("Table name missing from table attributes")));
                             }
                             else if (columnName == null) {
-                                rc.ErrorCode = ErrorCodes.COLUMN_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
-                                rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Column name missing from table attributes")));
+                                rc.AddError(new Error(ErrorCodes.COLUMN_NAME_MISSING_FROM_TABLE_ATTRIBUTE, new Exception("Column name missing from table attributes")));
                             }
                             else {
                                 var insertSubItemRc = await Insert(pConnection, tableName!, value.GetType(), value);
@@ -648,14 +623,12 @@ namespace JB.SqlDatabase.SQlite {
                     dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
 
                     if (dataReader.RowsAffected() == 0) {
-                        rc.ErrorCode = ErrorCodes.NO_ROWS_AFFECTED;
-                        rc.Errors.Add(new Error(rc.ErrorCode, new Exception("No rows affected")));
+                        rc.AddError(new Error(ErrorCodes.NO_ROWS_AFFECTED, new Exception("No rows affected")));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.INSERT_DATA_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.INSERT_DATA_FAILED, ex));
             }
 
             if (rc.Success) {
@@ -712,12 +685,10 @@ namespace JB.SqlDatabase.SQlite {
                                 string? columnName = tableAttribute?.NamedArguments[1].TypedValue.Value as string;
 
                                 if (tableName == null) {
-                                    rc.ErrorCode = ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
-                                    rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Table name missing from table attributes")));
+                                    rc.AddError(new Error(ErrorCodes.TABLE_NAME_MISSING_FROM_TABLE_ATTRIBUTE, new Exception("Table name missing from table attributes")));
                                 }
                                 else if (columnName == null) {
-                                    rc.ErrorCode = ErrorCodes.COLUMN_NAME_MISSING_FROM_TABLE_ATTRIBUTE;
-                                    rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Column name missing from table attributes")));
+                                    rc.AddError(new Error(ErrorCodes.COLUMN_NAME_MISSING_FROM_TABLE_ATTRIBUTE, new Exception("Column name missing from table attributes")));
                                 }
                                 else {
                                     IReturnCode<IList<object?>> getSubObjectRc = await Get(pConnection, tableName, prop.PropertyType, $"{columnName} = '{itemId}'");
@@ -742,8 +713,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.POPULATE_OBJECT_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ErrorCodes.POPULATE_OBJECT_FAILED, ex));
             }
 
             if (rc.Success) {

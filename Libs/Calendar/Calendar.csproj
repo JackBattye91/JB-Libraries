@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>JB.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<AssemblyName>JB_Library_$(MSBuildProjectName)</AssemblyName>
 	<Version>1.0.1</Version>
+	<Configurations>Debug;Release;Common .Net8.0</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
