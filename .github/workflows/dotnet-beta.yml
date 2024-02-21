@@ -5,9 +5,9 @@ name: .NET Beta
 on:
   push:
     branches: 
-      - '*'
-      - '!Trunk'
-      - '!Development'
+      - "**"
+      - "!Trunk"
+      - "!Development"
       
 jobs:
   build:
