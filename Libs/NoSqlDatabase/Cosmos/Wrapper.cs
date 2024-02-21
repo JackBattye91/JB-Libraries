@@ -8,7 +8,7 @@ using Microsoft.Azure.Cosmos;
 using System.Net;
 
 namespace JB.NoSqlDatabase.Cosmos {
-    internal class Wrapper : JB.NoSqlDatabase.IWrapper {
+    public class Wrapper : JB.NoSqlDatabase.IWrapper {
         protected CosmosClient? cosmosClient;
 
         public Wrapper(string? pConnectionString)
