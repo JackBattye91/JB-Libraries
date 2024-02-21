@@ -4,9 +4,10 @@ name: .NET Beta
 
 on:
   push:
-    branches: 
-      - 'dev/**'
-
+    branches-ignore: 
+      - 'Trunk'
+      - 'Development'
+      
 jobs:
   build:
   
