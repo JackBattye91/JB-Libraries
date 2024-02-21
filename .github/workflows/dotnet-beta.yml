@@ -3,11 +3,11 @@
 name: .NET Beta
 
 on:
+  workflow_dispatch:
   push:
-    branches: 
-      - "**"
-      - "!Trunk"
-      - "!Development"
+    branches-ignore: 
+      - "Trunk"
+      - "Development"
       
 jobs:
   build:
