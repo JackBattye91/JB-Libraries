@@ -5,7 +5,7 @@ name: .NET Beta
 on:
   push:
     branches: 
-      - "dev/**"
+      - "dev/*"
 
 jobs:
   build:
