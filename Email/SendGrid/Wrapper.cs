@@ -1,4 +1,4 @@
-﻿using Email.Interfaces;
+﻿using JB.Email.Interfaces;
 using JB.Common;
 using JB.Email;
 using System;
