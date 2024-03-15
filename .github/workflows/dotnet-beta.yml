@@ -4,8 +4,6 @@ name: .NET Development
 
 on:
   push:
-    branches: 
-      - "Development"
 
 jobs:
   build:
