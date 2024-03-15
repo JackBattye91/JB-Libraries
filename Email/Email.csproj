@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>JB.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-    <AssemblyName>JB.$(MSBuildProjectName)</AssemblyName>
+    <AssemblyName>JB_Library_$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
