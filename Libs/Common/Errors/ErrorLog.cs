@@ -13,7 +13,7 @@ namespace JB.Common {
             if (Errors.Count != 0) {
                 using (StreamWriter writer = File.CreateText("ErrorLog.txt")) {
                     foreach (Error error in Errors) {
-                        writer.WriteLine($"{error.TimeStamp} - {error.ErrorCode} - {error.Exception?.Message} - {error.Exception?.StackTrace}");
+                        writer.WriteLine($"{error.TimeStamp} - {error.Exception?.Message} - {error.Exception?.StackTrace}");
                     }
                 }
             }

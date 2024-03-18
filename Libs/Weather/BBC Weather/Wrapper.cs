@@ -52,7 +52,7 @@ namespace JB.Weather.BBC_Weather
                 }
             }
             catch(Exception ex) {
-                rc.AddError(new NetworkError(ErrorCodes.GET_TODAYS_FORCAST_FAILED, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -102,7 +102,7 @@ namespace JB.Weather.BBC_Weather
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new NetworkError(ErrorCodes.GET_3DAY_FORCAST_FAILED, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
