@@ -40,7 +40,7 @@ namespace JB.Email.SendGrid
 
                     if (string.IsNullOrEmpty(ApiKey))
                     {
-                        rc.AddError(new Error(2, new Exception("Unable to get API key")));
+                        rc.AddError(new Error("Unable to get API key"));
                     }
                 }
 
@@ -96,7 +96,7 @@ namespace JB.Email.SendGrid
                     }
                     else
                     {
-                        rc.AddError(new Error(3, new Exception("No recipients found")));
+                        rc.AddError(new Error("No recipients found"));
                     }
                 }
 
@@ -105,12 +105,12 @@ namespace JB.Email.SendGrid
 
                     if (!response.IsSuccessStatusCode)
                     {
-                        rc.AddError(new Error(4, new Exception("Unable to send email")));
+                        rc.AddError(new Error("Unable to send email"));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new Error(7, ex));
+                rc.AddError(new Error(ex));
             }
 
             return rc;

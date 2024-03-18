@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Weather", "Libs\Weather\Wea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlDatabase.Tests", "Tests\SqlDatabase.Tests\SqlDatabase.Tests.csproj", "{EB63615F-4D69-4BAD-88F8-B97EB54F0D6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Email", "Email\Email.csproj", "{B4652460-460F-435F-A5EB-741187B13FE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Email", "Email\Email.csproj", "{B4652460-460F-435F-A5EB-741187B13FE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
