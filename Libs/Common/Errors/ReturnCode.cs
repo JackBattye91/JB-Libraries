@@ -73,7 +73,7 @@ namespace JB.Common {
     }
     public class ReturnCode : IReturnCode {
         protected IList<IError> errors = new List<IError>();
-        public bool Success { get { return errors.Any(x => x.ErrorType == ErrorType.ERROR); } }
+        public bool Success { get { return errors.Count == 0 ? true : errors.Any(x => x.ErrorType == ErrorType.ERROR); } }
         public bool Failed { get { return !Success; } }
 
 
@@ -85,7 +85,7 @@ namespace JB.Common {
     public class ReturnCode<T> : IReturnCode<T> {
         protected IList<IError> errors = new List<IError>();
         public T? Data { get; set; }
-        public bool Success { get { return errors.Any(x => x.ErrorType == ErrorType.ERROR); } }
+        public bool Success { get { return errors.Count == 0 ? true : errors.Any(x => x.ErrorType == ErrorType.ERROR); } }
         public bool Failed { get { return !Success; } }
         public IReadOnlyList<IError> Errors { get { return errors.ToArray(); } }
         public void AddError(IError pError) {
