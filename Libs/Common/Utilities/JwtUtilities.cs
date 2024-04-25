@@ -24,12 +24,12 @@ namespace JB.Common.Utilities
                 if (rc.Success)
                 {
                     if (string.IsNullOrEmpty(pIssuer)) {
-                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_ISSUER));
+                        rc.AddError(new Error("Invalid JWT"));
                     }
 
                     if (string.IsNullOrEmpty(pSecurityKey))
                     {
-                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_SECURITY_KEY));
+                        rc.AddError(new Error("Invalid JWT security key"));
                     }
                 }
 
@@ -61,7 +61,7 @@ namespace JB.Common.Utilities
             }
             catch (Exception ex)
             {
-                rc.AddError(new Error(ErrorCodes.SIGNING_TOKEN_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success)
@@ -82,12 +82,12 @@ namespace JB.Common.Utilities
                 {
                     if (string.IsNullOrEmpty(pIssuer))
                     {
-                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_ISSUER));
+                        rc.AddError(new Error("Invalid JWT Issuer"));
                     }
 
                     if (string.IsNullOrEmpty(pSecurityKey))
                     {
-                        rc.AddError(new Error(ErrorCodes.INVALID_JWT_SECURITY_KEY));
+                        rc.AddError(new Error("Invalid JWT security key"));
                     }
                 }
 
@@ -113,7 +113,7 @@ namespace JB.Common.Utilities
             }
             catch (Exception ex)
             {
-                rc.AddError(new NetworkError(ErrorCodes.VALIDATE_TOKEN_FAILED, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             return rc;

@@ -43,7 +43,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new Error(ErrorCodes.GET_OBJECT_VALUES_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
