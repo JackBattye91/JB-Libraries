@@ -34,7 +34,7 @@ namespace JB.Common.Networking
                 requestMessage = new HttpRequestMessage(method ?? HttpMethod.Get, url);
 
                 if (content != null) {
-                    requestMessage.Content = new StringContent(content, Encoding.UTF8, mimeType);
+                    requestMessage.Content = new StringContent(content, Encoding.UTF8, mimeType ?? "text/plain");
                 }
                 
                 foreach (KeyValuePair<string, string> header in headers ?? new Dictionary<string, string>()) {
