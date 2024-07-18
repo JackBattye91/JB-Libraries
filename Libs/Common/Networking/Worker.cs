@@ -9,7 +9,7 @@ using System.Net.Http;
 
 namespace JB.Common.Networking
 {
-    public class Worker
+    public static class Worker
     {
         public static string Base64Encode(string plainText)
         {
@@ -44,7 +44,7 @@ namespace JB.Common.Networking
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc.Errors.Add(new NetworkingError(ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
+                    rc.AddError(new NetworkError(responseMessage.StatusCode));
                 }
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
                     response = await responseMessage.Content.ReadAsStringAsync();
@@ -80,7 +80,7 @@ namespace JB.Common.Networking
                 responseMessage = await client.SendAsync(requestMessage);
 
                 if (HttpStatusCode.OK != responseMessage.StatusCode) {
-                    rc.Errors.Add(new NetworkingError(ErrorCodes.BAD_STATUS_CODE_RETURNED, responseMessage.StatusCode));
+                    rc.AddError(new NetworkError(responseMessage.StatusCode));
                 }
 
                 if (HttpStatusCode.OK == responseMessage.StatusCode) {
