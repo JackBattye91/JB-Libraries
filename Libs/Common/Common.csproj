@@ -12,7 +12,6 @@
 	<Authors>Jack Battye</Authors>
     <Company>Jack Battye</Company>
 	<Version>1.0.23</Version>
-	<Configurations>Debug;Release;Common .Net8.0;Common .Net6.0</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

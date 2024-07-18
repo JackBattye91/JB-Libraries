@@ -1,14 +1,9 @@
 ﻿using JB.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using System.Net;
 
 namespace JB.NoSqlDatabase.Cosmos {
-    internal class Wrapper : JB.NoSqlDatabase.IWrapper {
+    public class Wrapper : JB.NoSqlDatabase.IWrapper {
         protected CosmosClient? cosmosClient;
 
         public Wrapper(string? pConnectionString)

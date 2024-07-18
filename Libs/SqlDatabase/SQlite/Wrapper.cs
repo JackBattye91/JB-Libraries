@@ -8,7 +8,7 @@ using System.Data;
 using Microsoft.Data.Sqlite;
 using System.Reflection;
 using JB.SqlDatabase.Attributes;
-using JB.SqlDatabase.SQlite.Interfaces;
+using JB.SqlDatabase.Interfaces;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Wrapper : IWrapper {
@@ -354,7 +354,6 @@ namespace JB.SqlDatabase.SQlite {
 
             return rc;
         }
-
 
         protected static SqliteConnection CreateConnection(string pDatabaseName, string pVersion = "3") {
             if (!File.Exists(pDatabaseName)) {
@@ -719,6 +718,65 @@ namespace JB.SqlDatabase.SQlite {
             if (rc.Success) {
                 rc.Data = objList;
             }
+
+            return rc;
+        }
+
+        private IReturnCode<IDictionary<string, object?>> GetPropertyValues<T>(T pObject) {
+            IReturnCode<IDictionary<string, object?>> rc = new ReturnCode<IDictionary<string, object?>>();
+            IDictionary<string, object?> values = new Dictionary<string, object?>();
+
+            try {
+                if (rc.Success) {
+                    Type objType = typeof(T);
+                    var properties = objType.GetProperties();
+
+                    foreach(PropertyInfo prop in properties) {
+                        string name = prop.Name;
+                        object? value = prop.GetValue(pObject, null);
+
+                        values.Add(name, value);
+                    }
+                }
+            }
+            catch (Exception ex) {
+
+            }
+
+            if (rc.Success) {
+                rc.Data = values;
+            }
+
+
+            return rc;
+        }
+        private IReturnCode<IDictionary<string, object?>> GEtPrimaryKeyValue<T>(T pObject) {
+            IReturnCode<IDictionary<string, object?>> rc = new ReturnCode<IDictionary<string, object?>>();
+            IDictionary<string, object?> values = new Dictionary<string, object?>();
+
+            try {
+                if (rc.Success) {
+                    Type objType = typeof(T);
+                    var properties = objType.GetProperties();
+
+                    foreach (PropertyInfo prop in properties) {
+                        CustomAttributeData? primary = prop.CustomAttributes.Where(x => x.AttributeType == typeof(PrimaryKeyAttribute)).FirstOrDefault();
+
+                        if (primary != null) {
+                            string name = prop.Name;
+                            object? value = prop.GetValue(pObject, null);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) {
+
+            }
+
+            if (rc.Success) {
+                rc.Data = values;
+            }
+
 
             return rc;
         }
