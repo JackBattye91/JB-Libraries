@@ -24,7 +24,7 @@ namespace JB.SerialCommunication.I2C {
 
             }
             catch (Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.GET_DEVICES_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
@@ -42,7 +42,7 @@ namespace JB.SerialCommunication.I2C {
             try {
                 if (rc.Success) {
                     if (false == int.TryParse(pAddress, out address)) {
-                        rc.Errors.Add(new Error(ErrorCodes.UNABLE_TO_PARSE_ADDRESS));
+                        rc.AddError(new Error(new JB.Common.Errors.JBException("Unable to parse I2C address")));
                     }
                 }
 
@@ -52,7 +52,7 @@ namespace JB.SerialCommunication.I2C {
                 }
             }
             catch(Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.ADD_DEVICE_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
@@ -71,12 +71,12 @@ namespace JB.SerialCommunication.I2C {
                         ((Device)pDevice).I2CDevice?.Write(pData);
                     }
                     else {
-                        rc.Errors.Add(new Error(ErrorCodes.INVALID_DEVICE));
+                        rc.AddError(new Error(new JB.Common.Errors.JBException("Incorrect Device type")));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.WRITE_DATA_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             return rc;
@@ -92,16 +92,16 @@ namespace JB.SerialCommunication.I2C {
                         ((Device)pDevice).I2CDevice?.Read(data);
 
                         if (data?.Length == 0) {
-                            rc.Errors.Add(new Error(ErrorCodes.NO_DATA_RECIEVED));
+                            rc.AddError(new Error(new JB.Common.Errors.JBException("Unable to read data")));
                         }
                     }
                     else {
-                        rc.Errors.Add(new Error(ErrorCodes.INVALID_DEVICE));
+                        rc.AddError(new Error(new JB.Common.Errors.JBException("Incorrent Device type")));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.READ_DATA_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {

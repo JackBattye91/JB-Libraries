@@ -29,7 +29,7 @@ namespace JB.SerialCommunication.COM {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.GET_DEVICES_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
@@ -54,12 +54,12 @@ namespace JB.SerialCommunication.COM {
                     ((Models.Device)device).COMPort?.Open();
 
                     if (((Models.Device)device).COMPort?.IsOpen == false) {
-                        rc.Errors.Add(new Error(ErrorCodes.UNABLE_TO_OPEN_PORT));
+                        rc.AddError(new Error());
                     }
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.ADD_DEVICE_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
@@ -88,7 +88,7 @@ namespace JB.SerialCommunication.COM {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.READ_DATA_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
@@ -115,7 +115,7 @@ namespace JB.SerialCommunication.COM {
                 }
             }
             catch (Exception ex) {
-                rc.Errors.Add(new Error(ErrorCodes.WRITE_DATA_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             return rc;
