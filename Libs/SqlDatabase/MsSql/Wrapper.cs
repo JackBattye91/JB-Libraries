@@ -36,7 +36,7 @@ namespace JB.SqlDatabase.MsSql {
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             return rc;
@@ -61,7 +61,7 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     if (connection?.Database.Equals(pDatabaseName) != true) {
-                        rc.AddError(new Error(ErrorCodes.CONNECTED_TO_INCORRECT_DATABASE, new Exception("Connected to incorrect database")));
+                        rc.AddError(new Error(new Exception("Connected to incorrect database")));
                     }
                 }
 
@@ -71,14 +71,14 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     SqlCommand command = connection!.CreateCommand();
-                    command.CommandType = System.Data.CommandType.Text;
-                    command.CommandText = $"CREATE TABLE {pTableName}({parameters});";
+                    //command.CommandType = System.Data.CommandType.Text;
+                    //command.CommandText = $"CREATE TABLE {pTableName}({parameters});";
 
                     await command.ExecuteNonQueryAsync();
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             return rc;
@@ -102,7 +102,7 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     if (connection?.Database.Equals(pDatabaseName) != true) {
-                        rc.AddError(new Error(ErrorCodes.CONNECTED_TO_INCORRECT_DATABASE, new Exception("Connected to incorrect database")));
+                        rc.AddError(new Error(new Exception("Connected to incorrect database")));
                     }
                 }
 
@@ -115,7 +115,7 @@ namespace JB.SqlDatabase.MsSql {
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             return rc;
@@ -141,7 +141,7 @@ namespace JB.SqlDatabase.MsSql {
         public Task<IReturnCode<IDataReader>> RunQuery(string pDatabaseName, string pQuery) {
             throw new NotImplementedException();
         }
-        public async Task<IReturnCode<IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object> pParameters) {
+        public async Task<IReturnCode<IDataReader>> RunStoredProcedure(string pDatabaseName, string pStoreProcedureName, IDictionary<string, object?> pParameters) {
             IReturnCode<IDataReader> rc = new ReturnCode<IDataReader>();
             SqlConnection? connection = null;
             IDataReader? dataReader = null;
@@ -161,7 +161,7 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     if (connection?.Database.Equals(pDatabaseName) != true) {
-                        rc.AddError(new Error(ErrorCodes.CONNECTED_TO_INCORRECT_DATABASE, new Exception("Connected to incorrect database")));
+                        rc.AddError(new Error(new Exception("Connected to incorrect database")));
                     }
                 }
 
@@ -171,13 +171,13 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     SqlCommand command = connection!.CreateCommand();
-                    command.CommandType = System.Data.CommandType.Text;
-                    command.CommandText = $"CREATE TABLE {pTableName}({parameters});";
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    
                     dataReader = new Models.DataReader(await command.ExecuteReaderAsync());
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new Error(ErrorCodes.CREATE_DATABASE_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
@@ -197,8 +197,7 @@ namespace JB.SqlDatabase.MsSql {
                     connectionString = Environment.GetEnvironmentVariable(Consts.EnvironmentVariables.ConnectionString);
 
                     if (string.IsNullOrEmpty(connectionString)) {
-                        rc.ErrorCode = ErrorCodes.UNABLE_TO_GET_CONNECTION_STRING;
-                        rc.Errors.Add(new Error(rc.ErrorCode, new Exception("Unable to find connection string")));
+                        rc.AddError(new Error(new Exception("Unable to find connection string")));
                     }
                 }
 
@@ -209,12 +208,12 @@ namespace JB.SqlDatabase.MsSql {
 
                 if (rc.Success) {
                     if (sqlConnection?.State != System.Data.ConnectionState.Open) {
-                        rc.AddError(new Error(ErrorCodes.UNABLE_TO_OPEN_CONNECTION_TO_SERVER, new Exception("Connection is not open")));
+                        rc.AddError(new Error(new Exception("Connection is not open")));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.AddError(new Error(ErrorCodes.CREATE_CONNECTION_FAILED, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {

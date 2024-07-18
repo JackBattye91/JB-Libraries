@@ -11,11 +11,11 @@ using Newtonsoft.Json;
 
 namespace JB.Weather.OpenWeather {
     internal class Wrapper : IWrapper {
-        public async Task<IReturnCode<IList<IForecast>>> Get3DayForecast(string pAreaCode) {
+        public Task<IReturnCode<IList<IForecast>>> Get3DayForecast(string pAreaCode) {
             throw new NotImplementedException();
         }
 
-        public async Task<IReturnCode<IForecast>> GetTodaysForecast(string pAreaCode) {
+        public Task<IReturnCode<IForecast>> GetTodaysForecast(string pAreaCode) {
             throw new NotImplementedException();
         }
     }

@@ -12,7 +12,7 @@ namespace JB.SqlDatabase.Converters {
         }
 
         public object? Read(IDataReader pReader) {
-
+            return null;
         }
 
         public void Write(IDataWriter pWriter, object? pObject) {

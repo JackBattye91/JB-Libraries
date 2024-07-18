@@ -740,7 +740,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
@@ -770,7 +770,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
