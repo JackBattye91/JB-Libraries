@@ -8,7 +8,7 @@ using System.Data;
 using Microsoft.Data.Sqlite;
 using System.Reflection;
 using JB.SqlDatabase.Attributes;
-using JB.SqlDatabase.SQlite.Interfaces;
+using JB.SqlDatabase.Interfaces;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Wrapper : IWrapper {
