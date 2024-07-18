@@ -32,4 +32,16 @@ namespace JB.Common.Utilities
             serializer.Serialize(writer, value);
         }
     }
+    public class DateTimeConverter : JsonConverter<DateTime>
+    {
+        public override DateTime ReadJson(JsonReader reader, Type objectType, DateTime existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            return reader.ReadAsDateTime() ?? existingValue;
+        }
+
+        public override void WriteJson(JsonWriter writer, DateTime value, JsonSerializer serializer)
+        {
+            writer.WriteValue(value.ToString("yyyy-MM-ddThh:mm:ss"));
+        }
+    }
 }

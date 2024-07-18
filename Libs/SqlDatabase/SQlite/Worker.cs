@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using JB.Common;
 using JB.SqlDatabase.Attributes;
 using JB.SqlDatabase.Interfaces;
-using JB.SqlDatabase.SQlite.Interfaces;
 
 namespace JB.SqlDatabase.SQlite {
     internal class Worker {
@@ -43,8 +42,7 @@ namespace JB.SqlDatabase.SQlite {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_OBJECT_VALUES_FAILED;
-                rc.Errors.Add(new Error(rc.ErrorCode, ex));
+                rc.AddError(new Error(ex));
             }
 
             if (rc.Success) {
