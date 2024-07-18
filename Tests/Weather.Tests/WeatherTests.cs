@@ -1,12 +1,12 @@
 namespace Weather.Tests {
     public class WeatherTests {
         [Test]
-        public void GetTodaysForcast() {
+        public void GetTodaysForecast() {
             // Arrange
             JB.Weather.IWrapper wrapper = JB.Weather.Factory.CreateWeatherWrapper();
 
             // Act
-            var getTodaysForcastTask = wrapper.GetTodaysForcast("2643123");
+            var getTodaysForcastTask = wrapper.GetTodaysForecast("2643123");
             getTodaysForcastTask.Wait();
             var rc = getTodaysForcastTask.Result;
 
@@ -15,12 +15,12 @@ namespace Weather.Tests {
         }
 
         [Test]
-        public void Get3DayForcast() {
+        public void Get3DayForecast() {
             // Arrange
             JB.Weather.IWrapper wrapper = JB.Weather.Factory.CreateWeatherWrapper();
 
             // Act
-            var getTodaysForcastTask = wrapper.Get3DayForcast("2643123");
+            var getTodaysForcastTask = wrapper.Get3DayForecast("2643123");
             getTodaysForcastTask.Wait();
             var rc = getTodaysForcastTask.Result;
 

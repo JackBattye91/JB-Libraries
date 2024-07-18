@@ -11,30 +11,28 @@ namespace JB.NoSqlDatabase.Cosmos {
     internal class Wrapper : JB.NoSqlDatabase.IWrapper {
         protected CosmosClient? cosmosClient;
 
-        public Wrapper() {
-            cosmosClient = null;
+        public Wrapper(string? pConnectionString)
+        {
+            Connect(pConnectionString, true);
         }
 
-        public async Task<IReturnCode<bool>> CreateDatabase(string pDatabaseId) {
+        public async Task<IReturnCode> CreateDatabase(string pDatabaseId)
+        {
             IReturnCode<bool> rc = new ReturnCode<bool>();
-            
-            try {
-                string? connectionString = Environment.GetEnvironmentVariable("cosmos-connection-string");
-                cosmosClient = new CosmosClient(connectionString);
-                DatabaseResponse response = await cosmosClient.CreateDatabaseIfNotExistsAsync(pDatabaseId);
-                
-                if (System.Net.HttpStatusCode.OK != response.StatusCode) {
-                    rc.ErrorCode = ErrorCodes.BAD_STATUS_CODE_FROM_CREATE_DATABASE;
-                    rc.Errors.Add(new NetworkError(rc.ErrorCode, response.StatusCode));
+
+            if (rc.Success)
+            {
+                IReturnCode<Database> createDbRc = await GetCosmosDatabase(null, pDatabaseId);
+
+                if (createDbRc.Failed)
+                {
+                    ErrorWorker.CopyErrors(createDbRc, rc);
                 }
-            }
-            catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_DATABASE_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
             }
 
             return rc;
         }
+
         public async Task<IReturnCode<Interfaces.IContainer>> GetContainer(string pDatabaseId, string pContainerId) {
             IReturnCode<Interfaces.IContainer> rc = new ReturnCode<Interfaces.IContainer>();
             Container? cosmosContainer = null;
@@ -61,8 +59,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
             }
             catch(Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_CONTAINER_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -83,7 +80,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
 
                 if (rc.Success) {
-                    IReturnCode<Database> getDatabaseRc = await GetCosmosDatabase(pDataBaseId);
+                    IReturnCode<Database> getDatabaseRc = await GetCosmosDatabase(null, pDataBaseId);
 
                     if (getDatabaseRc.Success) {
                         database = getDatabaseRc?.Data;
@@ -101,8 +98,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                             cosmosContainer = response.Container;
                         }
                         else {
-                            rc.ErrorCode = ErrorCodes.BAD_STATUS_CODE_FROM_CREATE_CONTAINER;
-                            rc.Errors.Add(new NetworkError(rc.ErrorCode, response?.StatusCode ?? HttpStatusCode.InternalServerError));
+                            rc.AddError(new NetworkError(response?.StatusCode ?? HttpStatusCode.InternalServerError));
                         }
                     }
                 }
@@ -114,8 +110,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
             }
             catch(Exception ex) {
-                rc.ErrorCode = ErrorCodes.CREATE_CONTAINER_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -150,15 +145,13 @@ namespace JB.NoSqlDatabase.Cosmos {
                         }
 
                         if (HttpStatusCode.Created != response?.StatusCode && HttpStatusCode.OK != response?.StatusCode) {
-                            rc.ErrorCode = ErrorCodes.BAD_STATUS_CODE_FROM_ADD_ITEM;
-                            rc.Errors.Add(new NetworkError(rc.ErrorCode, response?.StatusCode ?? HttpStatusCode.InternalServerError));
+                            rc.AddError(new NetworkError(response?.StatusCode ?? HttpStatusCode.InternalServerError));
                         }
                     }
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.ADD_ITEM_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -220,8 +213,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_ITEMS_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -284,8 +276,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_ITEMS_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -346,8 +337,7 @@ namespace JB.NoSqlDatabase.Cosmos {
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_ITEM_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -402,16 +392,14 @@ namespace JB.NoSqlDatabase.Cosmos {
                             item = response.Resource;
                         }
                         else {
-                            rc.ErrorCode = ErrorCodes.BAD_STATUS_CODE_FROM_UPDATE_ITEM;
-                            rc.Errors.Add(new NetworkError(rc.ErrorCode, response.StatusCode));
+                            rc.AddError(new NetworkError(response.StatusCode));
                         }
                         
                     }
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.UPDATE_ITEM_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
@@ -441,8 +429,8 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             return rc;
         }
-        public async Task<IReturnCode<bool>> DeleteItem<Tmodel>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
-            IReturnCode<bool> rc = new ReturnCode<bool>();
+        public async Task<IReturnCode> DeleteItem<Tmodel>(string pDatabaseId, string pContainerId, string pItemId, string pPartitionKeyValue) {
+            IReturnCode rc = new ReturnCode();
             Container? container = null;
 
             try {
@@ -462,43 +450,85 @@ namespace JB.NoSqlDatabase.Cosmos {
                         ItemResponse<Tmodel> resposne = await container.DeleteItemAsync<Tmodel>(pItemId, new PartitionKey(pPartitionKeyValue));
 
                         if (System.Net.HttpStatusCode.OK != resposne.StatusCode && System.Net.HttpStatusCode.NoContent != resposne.StatusCode) {
-                            rc.ErrorCode = ErrorCodes.BAD_STATUS_CODE_FROM_DELETE_ITEM;
-                            rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError));
+                            rc.AddError(new NetworkError(HttpStatusCode.InternalServerError));
                         }
                     }
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.DELETE_ITEM_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             return rc;
         }
 
-        protected async Task<IReturnCode<Database>> GetCosmosDatabase(string pDatabaseId) {
+        protected IReturnCode Connect(string? pConnectionString = null, bool pForceReconnect = false)
+        {
+            IReturnCode rc = new ReturnCode();
+
+            try
+            {
+                if (rc.Success)
+                {
+                    if (string.IsNullOrEmpty(pConnectionString))
+                    {
+                        pConnectionString = Environment.GetEnvironmentVariable("cosmos-connection-string");
+                    }
+                }
+                
+                if (rc.Success)
+                {
+                    if (cosmosClient == null || pForceReconnect)
+                    {
+                        cosmosClient = new CosmosClient(pConnectionString);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                rc.AddError(new Error(ex));
+            }
+
+            return rc;
+        }
+        protected async Task<IReturnCode<Database>> GetCosmosDatabase(string? pConnectionString, string pDatabaseId)
+        {
             IReturnCode<Database> rc = new ReturnCode<Database>();
-            string? connectionString = Environment.GetEnvironmentVariable("cosmos-connection-string");
             Database? database = null;
 
-            try {
-                cosmosClient = new CosmosClient(connectionString);
-                DatabaseResponse response = await cosmosClient.CreateDatabaseIfNotExistsAsync(pDatabaseId);
-                
-                if (System.Net.HttpStatusCode.OK == response.StatusCode) {
-                    database = response.Database;
+            try
+            {
+                if (rc.Success)
+                {
+                    IReturnCode connectRc = Connect(pConnectionString);
+
+                    if (connectRc.Failed)
+                    {
+                        ErrorWorker.CopyErrors(connectRc, rc);
+                    }
                 }
-                else if (System.Net.HttpStatusCode.OK != response.StatusCode) {
-                    rc.ErrorCode = ErrorCodes.BAD_STATUS_CODE_FROM_GET_COSMOS_DATABASE;
-                    rc.Errors.Add(new NetworkError(rc.ErrorCode, response.StatusCode));
+
+                if (rc.Success)
+                {
+                    DatabaseResponse response = await cosmosClient!.CreateDatabaseIfNotExistsAsync(pDatabaseId);
+
+                    if (System.Net.HttpStatusCode.OK == response.StatusCode)
+                    {
+                        database = response.Database;
+                    }
+                    else if (System.Net.HttpStatusCode.OK != response.StatusCode)
+                    {
+                        rc.AddError(new NetworkError(response.StatusCode));
+                    }
                 }
             }
-            catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_COSMOS_DATABASE_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+            catch (Exception ex)
+            {
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
-            if (rc.Success) {
+            if (rc.Success)
+            {
                 rc.Data = database;
             }
 
@@ -511,7 +541,7 @@ namespace JB.NoSqlDatabase.Cosmos {
 
             try {
                 if (rc.Success) {
-                    var databaseRc = await GetCosmosDatabase(pDatabaseId);
+                    var databaseRc = await GetCosmosDatabase(null, pDatabaseId);
 
                     if (databaseRc.Success) {
                         database = databaseRc.Data;
@@ -525,14 +555,12 @@ namespace JB.NoSqlDatabase.Cosmos {
                     container = database?.GetContainer(pContainerId);
 
                     if (null == container) {
-                        rc.ErrorCode = ErrorCodes.NO_CONTAINER_RETURNED;
-                        rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError));
+                        rc.AddError(new NetworkError(HttpStatusCode.InternalServerError));
                     }
                 }
             }
             catch (Exception ex) {
-                rc.ErrorCode = ErrorCodes.GET_COSMOS_CONTAINER_FAILED;
-                rc.Errors.Add(new NetworkError(rc.ErrorCode, HttpStatusCode.InternalServerError, ex));
+                rc.AddError(new NetworkError(HttpStatusCode.InternalServerError, ex));
             }
 
             if (rc.Success) {
